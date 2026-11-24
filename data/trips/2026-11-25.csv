@@ -1,3 +1,4 @@
 car_id,reg_plate,model,start_at,end_at,minutes,distance_km,fuel_start,fuel_end,range_start,range_end,kind,note
 78621,DW6WM43,RENAULT Arkana,2026-11-24T23:29:40Z,2026-11-24T23:30:40Z,1.0,0.15,81.0,70.0,328,499,rezerwacja,start niepewny
 83871,DX06291,RENAULT Arkana,2026-11-24T23:29:40Z,2026-11-24T23:39:40Z,10.0,11.28,75.0,66.0,304,471,przejazd,start niepewny
+68846,KK09018,DACIA Sandero,2026-11-24T23:29:40Z,2026-11-24T23:52:40Z,23.0,10.53,52.0,50.0,208,312,przejazd,start niepewny
