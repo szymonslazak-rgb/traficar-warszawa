@@ -24,7 +24,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from bolt import BoltData, databricks_settings
+from bolt import BoltData
 from report import write_report
 
 API = "https://fioletowe.live/api/v1"
@@ -453,8 +453,7 @@ def main() -> int:
         summary = store.write_summary(now)
         today = summary["periods"].get("doba") or {}
         try:
-            write_report(Path(args.data), Path(args.report), bolt.snapshot(), now,
-                         databricks_settings() is not None)
+            write_report(Path(args.data), Path(args.report), bolt.snapshot(), now)
         except (OSError, ValueError, KeyError) as error:
             print(f"nie udalo sie zbudowac strony: {error}", file=sys.stderr, flush=True)
         if args.git:
