@@ -17,12 +17,12 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
-SHEET_ID = "1V_xgPiWUly6tz_qTjfubQWW0Y5sejYrg9v37hhD11w4"
+SHEET_ID = "1JBw3vbYue_LEH_Boc4Gna6IvzAD4kyUHNHGwyr5lXE0"
 ORDERS_GID = "1458960516"
 SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv&gid={ORDERS_GID}"
 
 WARSAW_PREFIXES = {"WA", "WB", "WD", "WE", "WF", "WG", "WH", "WI", "WJ", "WK", "WN", "WT", "WU", "WW", "WX", "WY", "WZ"}
-COUNTED_STATES = {"finished", "started", "booked", "paused"}
+COUNTED_STATES = {"finished"}
 
 BOLT_FLEET = 490
 ORDERS_TTL_S = 3600
