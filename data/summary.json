@@ -1,42 +1,42 @@
 {
- "generated_at": "2026-11-24T12:37:17Z",
+ "generated_at": "2026-11-24T12:47:17Z",
  "zone": "Warszawa",
  "days": [
   {
    "day": "2026-11-24",
-   "trips": 1,
-   "reservations": 2,
+   "trips": 2,
+   "reservations": 4,
    "trips_by_model": {
-    "RENAULT Clio V": 1
+    "RENAULT Clio V": 2
    },
-   "avg_available": 452.1,
-   "reads": 40,
-   "coverage_pct": 4.9
+   "avg_available": 450.9,
+   "reads": 50,
+   "coverage_pct": 6.0
   }
  ],
  "periods": {
   "doba": {
    "days": 1,
-   "avg_trips_per_day": 1.0,
-   "avg_available": 452.1,
+   "avg_trips_per_day": 2.0,
+   "avg_available": 450.9,
    "avg_trips_per_day_by_model": {
-    "RENAULT Clio V": 1.0
+    "RENAULT Clio V": 2.0
    }
   },
   "tydzien": {
    "days": 1,
-   "avg_trips_per_day": 1.0,
-   "avg_available": 452.1,
+   "avg_trips_per_day": 2.0,
+   "avg_available": 450.9,
    "avg_trips_per_day_by_model": {
-    "RENAULT Clio V": 1.0
+    "RENAULT Clio V": 2.0
    }
   },
   "miesiac": {
    "days": 1,
-   "avg_trips_per_day": 1.0,
-   "avg_available": 452.1,
+   "avg_trips_per_day": 2.0,
+   "avg_available": 450.9,
    "avg_trips_per_day_by_model": {
-    "RENAULT Clio V": 1.0
+    "RENAULT Clio V": 2.0
    }
   }
  }
