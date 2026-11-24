@@ -1,0 +1,35 @@
+{
+ "generated_at": "2026-11-24T12:07:17Z",
+ "zone": "Warszawa",
+ "days": [
+  {
+   "day": "2026-11-24",
+   "trips": 0,
+   "reservations": 0,
+   "trips_by_model": {},
+   "avg_available": 458.3,
+   "reads": 10,
+   "coverage_pct": 1.3
+  }
+ ],
+ "periods": {
+  "doba": {
+   "days": 1,
+   "avg_trips_per_day": 0.0,
+   "avg_available": 458.3,
+   "avg_trips_per_day_by_model": {}
+  },
+  "tydzien": {
+   "days": 1,
+   "avg_trips_per_day": 0.0,
+   "avg_available": 458.3,
+   "avg_trips_per_day_by_model": {}
+  },
+  "miesiac": {
+   "days": 1,
+   "avg_trips_per_day": 0.0,
+   "avg_available": 458.3,
+   "avg_trips_per_day_by_model": {}
+  }
+ }
+}
