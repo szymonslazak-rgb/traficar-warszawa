@@ -39,7 +39,7 @@ def _day_files(root: Path, folder: str) -> set[str]:
     return {p.stem for p in (root / folder).glob("*.csv")}
 
 
-def build_data(root: Path, bolt: dict, now: datetime, databricks_configured: bool) -> dict:
+def build_data(root: Path, bolt: dict, now: datetime) -> dict:
     today = now.astimezone(WARSAW).date().isoformat()
     days = sorted(_day_files(root, "reads") | _day_files(root, "trips"))
 
@@ -92,7 +92,6 @@ def build_data(root: Path, bolt: dict, now: datetime, databricks_configured: boo
         "bolt_orders_fetched_at": bolt.get("orders_fetched_at"),
         "bolt_latest_order": bolt.get("latest_order"),
         "bolt_fleet": bolt.get("fleet") or {},
-        "databricks_configured": databricks_configured,
         "errors": bolt.get("errors") or {},
     }
 
@@ -102,8 +101,8 @@ def render(data: dict) -> str:
     return TEMPLATE.read_text("utf-8").replace("__DATA__", payload)
 
 
-def write_report(root: Path, out: Path, bolt: dict, now: datetime, databricks_configured: bool) -> None:
+def write_report(root: Path, out: Path, bolt: dict, now: datetime) -> None:
     out.parent.mkdir(parents=True, exist_ok=True)
     tmp = out.with_suffix(".tmp")
-    tmp.write_text(render(build_data(root, bolt, now, databricks_configured)), "utf-8")
+    tmp.write_text(render(build_data(root, bolt, now)), "utf-8")
     tmp.replace(out)
