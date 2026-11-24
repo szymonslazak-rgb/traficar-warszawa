@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trafficar i Bolt w Warszawie: flota i zamówienia</title>
+<style>
+:root {
+  --bg: #f6f6f8; --card: #fff; --fg: #17171c; --muted: #61616d; --line: #e3e3ea;
+  --accent: #5b21b6; --accent-fg: #fff; --chip: #ececf2; --warn: #b45309; --strong: #f1effa;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #121216; --card: #1b1b21; --fg: #eeeef3; --muted: #9c9cab; --line: #2c2c36;
+    --accent: #8b5cf6; --accent-fg: #fff; --chip: #2a2a34; --warn: #f59e0b; --strong: #25223a; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 1180px; margin: 0 auto; padding: 24px 16px 64px; display: flex; flex-direction: column; gap: 32px; }
+h1 { margin: 0; font-size: 26px; }
+h2 { margin: 0; font-size: 19px; }
+p { margin: 0; }
+.muted { color: var(--muted); }
+.small { font-size: 12.5px; line-height: 1.5; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+.picker { display: flex; flex-direction: column; gap: 10px; background: var(--chip); border-radius: 12px; padding: 12px; margin-top: 12px; }
+.picker .label { font-size: 12px; font-weight: 600; color: var(--muted); }
+.row { display: flex; flex-wrap: wrap; gap: 6px; align-items: flex-end; }
+button, input { font: inherit; }
+button.chip { border: 0; border-radius: 9px; padding: 6px 12px; background: var(--card); color: var(--muted); cursor: pointer; }
+button.chip:hover { background: var(--line); }
+button.chip.on { background: var(--accent); color: var(--accent-fg); }
+label.date { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--muted); }
+input[type=date] { height: 34px; border: 1px solid var(--line); border-radius: 9px; padding: 0 8px; background: var(--card); color: var(--fg); }
+.table-wrap { overflow-x: auto; margin-top: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); }
+table { border-collapse: collapse; width: 100%; min-width: 720px; }
+th, td { padding: 8px 12px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { font-weight: 600; font-size: 13px; color: var(--muted); background: var(--card); }
+th.c { text-align: center; }
+td.n { font-variant-numeric: tabular-nums; }
+.sep { border-left: 1px solid var(--line); }
+tr.strong td { background: var(--strong); font-weight: 600; }
+tr:last-child td { border-bottom: 0; }
+.badge { display: inline-block; margin-left: 8px; padding: 0 8px; border: 1px solid var(--line); border-radius: 999px; font-size: 11.5px; color: var(--muted); }
+.warn { color: var(--warn); }
+.empty { padding: 18px 12px; color: var(--muted); }
+section.block { scroll-margin-top: 12px; }
+section.block > .hint { margin-top: 4px; max-width: 760px; }
+.notes { display: flex; flex-direction: column; gap: 4px; margin-top: 10px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Trafficar i Bolt w Warszawie</h1>
+    <p class="muted" id="meta"></p>
+    <div class="picker" id="global"></div>
+  </header>
+  <section class="block" id="fleet"></section>
+  <section class="block" id="orders"></section>
+  <section class="block" id="models"></section>
+  <p class="muted small" id="sources"></p>
+</main>
+
+<script id="data" type="application/json">__DATA__</script>
+
+<script id="calc">
+function createCalc(D) {
+  var MS = 86400000;
+  var LOW = 80;
+  function num(s) { var p = s.split("-").map(Number); return Math.round(Date.UTC(p[0], p[1] - 1, p[2]) / MS); }
+  function str(n) { return new Date(n * MS).toISOString().slice(0, 10); }
+  function monday(n) { return n - ((new Date(n * MS).getUTCDay() + 6) % 7); }
+  function mean(a) {
+    var r = a.filter(function (x) { return x !== null; });
+    return r.length ? r.reduce(function (s, x) { return s + x; }, 0) / r.length : null;
+  }
+  function ratio(a, b) { return a === null || b === null || b === 0 ? null : a / b; }
+
+  var trByDay = {};
+  D.days.forEach(function (d) { trByDay[d.day] = d; });
+  var boltDays = Object.keys(D.bolt_orders).sort();
+  var boltFirst = boltDays.length ? boltDays[0] : null;
+  var boltLast = boltDays.length ? boltDays[boltDays.length - 1] : null;
+  var snaps = Object.keys(D.bolt_fleet).sort().map(function (k) { return [k, D.bolt_fleet[k]]; });
+  var cars = D.cars.map(function (c) {
+    return { model: c.model, kind: c.kind, electric: c.electric, f: num(c.first), l: num(c.last) };
+  });
+
+  function inFleet(c, n) { return c.f <= n && c.l >= n - 1; }
+  function fleetOn(n) { var k = 0; for (var i = 0; i < cars.length; i++) if (inFleet(cars[i], n)) k++; return k; }
+  function boltFleetOn(day) {
+    var found = null;
+    for (var i = 0; i < snaps.length; i++) { if (snaps[i][0] <= day) found = snaps[i][1]; else break; }
+    return found;
+  }
+
+  function dayRows(fromN, toN) {
+    var out = [];
+    for (var n = fromN; n <= toN; n++) {
+      var day = str(n), tr = trByDay[day], has = !!tr && tr.reads > 0;
+      var boltHas = boltFirst !== null && day >= boltFirst && day <= boltLast;
+      out.push({
+        n: n, day: day, today: day === D.today, trHas: has,
+        trFleet: has ? fleetOn(n) : null, trFree: has ? tr.free : null, trCov: has ? tr.coverage : null,
+        trOrders: has ? tr.orders : 0,
+        boltHas: boltHas, boltOrders: boltHas ? (D.bolt_orders[day] || 0) : 0, boltFleet: boltFleetOn(day)
+      });
+    }
+    return out;
+  }
+
+  function summarize(key, label, rows) {
+    var tr = rows.filter(function (r) { return r.trHas; });
+    var bolt = rows.filter(function (r) { return r.boltHas; });
+    var trOrders = tr.reduce(function (s, r) { return s + r.trOrders; }, 0);
+    var boltOrders = bolt.reduce(function (s, r) { return s + r.boltOrders; }, 0);
+    var trFleet = mean(tr.map(function (r) { return r.trFleet; }));
+    var boltFleet = mean(bolt.map(function (r) { return r.boltFleet; }));
+    var trPerDay = tr.length ? trOrders / tr.length : null;
+    var boltPerDay = bolt.length ? boltOrders / bolt.length : null;
+    return {
+      key: key, label: label, partial: false, trDays: tr.length, boltDays: bolt.length,
+      trFleet: trFleet, trFree: mean(tr.map(function (r) { return r.trFree; })), trCov: mean(tr.map(function (r) { return r.trCov; })),
+      trOrders: trOrders, trPerDay: trPerDay,
+      trPerCar: tr.length ? ratio(trOrders, trFleet) : null, trPerCarDay: ratio(trPerDay, trFleet),
+      boltFleet: boltFleet, boltOrders: boltOrders, boltPerDay: boltPerDay,
+      boltPerCar: bolt.length ? ratio(boltOrders, boltFleet) : null, boltPerCarDay: ratio(boltPerDay, boltFleet)
+    };
+  }
+
+  function dayLabel(n) {
+    return new Date(n * MS).toLocaleDateString("pl-PL", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" });
+  }
+  function shortDay(n) { var d = new Date(n * MS); return d.getUTCDate() + "." + String(d.getUTCMonth() + 1).padStart(2, "0"); }
+
+  function clamp(from, to) {
+    var todayN = num(D.today), f = num(from), t = Math.min(num(to), todayN);
+    if (f > t) f = t;
+    if (t - f + 1 > 366) f = t - 365;
+    return [f, t];
+  }
+
+  function groupRows(from, to, by) {
+    var r = clamp(from, to), rows = dayRows(r[0], r[1]);
+    var closed = rows.filter(function (x) { return !x.today; });
+    var list;
+    if (by === "day") {
+      list = rows.map(function (x) { var s = summarize(x.day, dayLabel(x.n), [x]); s.partial = x.today; return s; });
+    } else {
+      var buckets = {}, order = [];
+      closed.forEach(function (x) {
+        var key = by === "week" ? String(monday(x.n)) : x.day.slice(0, 7);
+        if (!buckets[key]) { buckets[key] = []; order.push(key); }
+        buckets[key].push(x);
+      });
+      list = order.sort().map(function (key) {
+        var b = buckets[key], label;
+        if (by === "week") {
+          var mon = Number(key), first = b[0].n, last = b[b.length - 1].n;
+          label = shortDay(first) + "–" + shortDay(last) + (first !== mon || last !== mon + 6 ? " (część tygodnia)" : "");
+        } else {
+          label = new Date(b[0].n * MS).toLocaleDateString("pl-PL", { month: "long", year: "numeric", timeZone: "UTC" });
+        }
+        return summarize(key, label, b);
+      });
+    }
+    var low = closed.filter(function (x) { return x.trCov !== null && x.trCov < LOW; }).length;
+    return {
+      from: str(r[0]), to: str(r[1]), rows: list,
+      total: closed.length ? summarize("all", "Cały wybrany okres", closed) : null,
+      closedDays: closed.length, lowCoverageDays: low
+    };
+  }
+
+  function models(from, to) {
+    var r = clamp(from, to);
+    var rows = dayRows(r[0], r[1]).filter(function (x) { return !x.today && x.trHas; });
+    var by = {};
+    function get(name, meta) {
+      if (!by[name]) by[name] = { model: name, kind: meta ? meta.kind : "", electric: meta ? meta.electric : false, cars: 0, orders: 0, carDays: 0 };
+      return by[name];
+    }
+    rows.forEach(function (row) {
+      var tr = trByDay[row.day];
+      Object.keys(tr.by_model).forEach(function (m) { get(m).orders += tr.by_model[m]; });
+      cars.forEach(function (c) { if (inFleet(c, row.n)) get(c.model, c).carDays++; });
+    });
+    if (rows.length) {
+      var last = rows[rows.length - 1];
+      cars.forEach(function (c) { if (inFleet(c, last.n)) get(c.model, c).cars++; });
+    }
+    var totalOrders = 0, totalCars = 0, totalCarDays = 0;
+    Object.keys(by).forEach(function (k) { totalOrders += by[k].orders; totalCars += by[k].cars; totalCarDays += by[k].carDays; });
+    var days = rows.length;
+    var list = Object.keys(by).map(function (k) {
+      var m = by[k];
+      m.share = totalOrders ? m.orders / totalOrders : null;
+      m.perDay = days ? m.orders / days : null;
+      m.perCarDay = m.carDays ? m.orders / m.carDays : null;
+      return m;
+    }).sort(function (a, b) { return b.orders - a.orders || b.cars - a.cars || a.model.localeCompare(b.model, "pl"); });
+    var total = list.length ? {
+      model: "Razem", kind: "", electric: false, cars: totalCars, orders: totalOrders,
+      share: totalOrders ? 1 : null, perDay: days ? totalOrders / days : null,
+      perCarDay: totalCarDays ? totalOrders / totalCarDays : null
+    } : null;
+    return { from: str(r[0]), to: str(r[1]), rows: list, total: total, closedDays: days };
+  }
+
+  function presets() {
+    var t = num(D.today), d = new Date(t * MS);
+    var monthStart = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1) / MS;
+    var prevStart = Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - 1, 1) / MS;
+    var firstTr = D.days.length ? D.days[0].day : null;
+    var first = [firstTr, boltFirst].filter(Boolean).sort()[0] || D.today;
+    return [
+      { id: "7", label: "7 dni", from: str(t - 6), to: D.today },
+      { id: "14", label: "14 dni", from: str(t - 13), to: D.today },
+      { id: "30", label: "30 dni", from: str(t - 29), to: D.today },
+      { id: "month", label: "Ten miesiąc", from: str(monthStart), to: D.today },
+      { id: "prev", label: "Poprzedni miesiąc", from: str(prevStart), to: str(monthStart - 1) },
+      { id: "all", label: "Od początku danych", from: first, to: D.today }
+    ];
+  }
+
+  return { groupRows: groupRows, models: models, presets: presets, LOW: LOW };
+}
+</script>
+
+<script>
+(function () {
+  var D = JSON.parse(document.getElementById("data").textContent);
+  var calc = createCalc(D);
+  var presets = calc.presets();
+  var BY = [["day", "Dzień po dniu"], ["week", "Tygodnie"], ["month", "Miesiące"]];
+  var SECTIONS = ["fleet", "orders", "models"];
+
+  var initial = presets.filter(function (p) { return p.id === "14"; })[0];
+  var state = { global: { preset: "14", from: initial.from, to: initial.to, by: "day" } };
+  SECTIONS.forEach(function (id) { state[id] = { preset: "14", from: initial.from, to: initial.to, by: "day" }; });
+
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function fmt(v, digits) {
+    if (v === null || v === undefined) return "—";
+    return v.toLocaleString("pl-PL", { minimumFractionDigits: digits, maximumFractionDigits: digits });
+  }
+  function pct(v) { return v === null ? "—" : fmt(v, 1) + "%"; }
+  function pctOf(a, b) { return a === null || b === null || b === 0 ? "—" : pct(a / b * 100); }
+  function day(s) { var p = s.split("-"); return p[2] + "." + p[1] + "." + p[0]; }
+
+  function picker(scope, withBy) {
+    var st = state[scope], pre = scope === "global" ? "Okres dla wszystkich tabel" : "Okres tej tabeli";
+    var html = '<div class="label">' + pre + "</div><div class=\"row\">";
+    presets.forEach(function (p) {
+      html += '<button class="chip' + (st.preset === p.id ? " on" : "") + '" data-scope="' + scope + '" data-preset="' + p.id + '">' + p.label + "</button>";
+    });
+    html += '</div><div class="row"><label class="date">Od<input type="date" data-scope="' + scope + '" data-edge="from" value="' + st.from + '" max="' + D.today + '"></label>' +
+      '<label class="date">Do<input type="date" data-scope="' + scope + '" data-edge="to" value="' + st.to + '" max="' + D.today + '"></label></div>';
+    if (withBy) {
+      html += '<div class="row"><span class="small muted" style="align-self:center;margin-right:4px">Pokaż jako</span>';
+      BY.forEach(function (b) {
+        html += '<button class="chip' + (st.by === b[0] ? " on" : "") + '" data-scope="' + scope + '" data-by="' + b[0] + '">' + b[1] + "</button>";
+      });
+      html += "</div>";
+    }
+    return html;
+  }
+
+  function rangeNote(r) {
+    var text = "Pokazuję " + day(r.from) + " – " + day(r.to) + ".";
+    if (r.lowCoverageDays > 0) {
+      text += " " + r.lowCoverageDays + " z " + r.closedDays + " zakończonych dni ma pokrycie odczytów mapy poniżej " + calc.LOW + "%, więc dane Trafficara z tych dni są niedoszacowane.";
+    }
+    return '<p class="muted small">' + text + "</p>";
+  }
+
+  function label(row) { return esc(row.label) + (row.partial ? '<span class="badge">trwa</span>' : ""); }
+  function cov(v) { return v === null ? "—" : '<span class="' + (v < calc.LOW ? "warn" : "") + '">' + pct(v) + "</span>"; }
+
+  function boltFleetNote() {
+    var days = Object.keys(D.bolt_fleet).sort(), text;
+    if (days.length) {
+      var last = days[days.length - 1];
+      text = "Flota Bolta pochodzi z Databricks, odczyt raz dziennie o 9:00 (Warszawa). Ostatni zapis: " + day(last) + ", " + fmt(D.bolt_fleet[last], 0) +
+        " aut. Między zapisami obowiązuje ostatni, a dni przed pierwszym zapisem pokazują „—”.";
+    } else if (D.databricks_configured) {
+      text = "Czekam na pierwszy odczyt floty Bolta z Databricks (codziennie o 9:00).";
+    } else {
+      text = "Połączenie z Databricks nie jest ustawione (sekrety DATABRICKS_* w repozytorium), więc flota Bolta i zamówienia na auto Bolta są puste.";
+    }
+    if (D.errors && D.errors.fleet) text += " Ostatni błąd odczytu: " + D.errors.fleet + ".";
+    return '<p class="muted small" style="margin-top:12px;max-width:760px">' + esc(text) + "</p>";
+  }
+
+  function shell(id, title, hint, withBy, body) {
+    return "<h2>" + title + '</h2><p class="muted hint">' + hint + '</p><div class="picker">' + picker(id, withBy) + "</div>" +
+      '<div class="notes">' + body.note + "</div>" + body.table;
+  }
+
+  function fleetBody() {
+    var r = calc.groupRows(state.fleet.from, state.fleet.to, state.fleet.by);
+    function tr(row, strong) {
+      return '<tr class="' + (strong ? "strong" : "") + '"><td>' + label(row) + '</td><td class="n sep">' + fmt(row.trFleet, 1) +
+        '</td><td class="n">' + fmt(row.trFree, 1) + '</td><td class="n">' + cov(row.trCov) +
+        '</td><td class="n sep">' + fmt(row.boltFleet, 1) + '</td><td class="n sep">' + pctOf(row.boltFleet, row.trFleet) + "</td></tr>";
+    }
+    var rows = (r.total ? tr(r.total, true) : "") + r.rows.map(function (x) { return tr(x, false); }).join("");
+    var table = '<div class="table-wrap"><table><thead><tr><th rowspan="2">Okres</th><th class="c sep" colspan="3">Trafficar</th><th class="c sep">Bolt</th>' +
+      '<th rowspan="2" class="sep">Flota Bolta jako % Trafficara</th></tr><tr><th class="sep">Flota</th><th>Śr. wolnych na mapie</th><th>Pokrycie mapy</th><th class="sep">Flota</th></tr></thead><tbody>' +
+      rows + "</tbody></table>" + (r.rows.length ? "" : '<div class="empty">W tym okresie nie ma jeszcze zakończonej doby.</div>') + "</div>";
+    return { note: rangeNote(r) + boltFleetNote(), table: table };
+  }
+
+  function ordersBody() {
+    var by = state.orders.by, perPeriod = by !== "day";
+    var r = calc.groupRows(state.orders.from, state.orders.to, by);
+    function tr(row, strong) {
+      return '<tr class="' + (strong ? "strong" : "") + '"><td>' + label(row) + '</td><td class="n sep">' + (row.trDays ? fmt(row.trOrders, 0) : "—") +
+        '</td><td class="n">' + fmt(row.trFleet, 1) + "</td>" + (perPeriod ? '<td class="n">' + fmt(row.trPerCar, 2) + "</td>" : "") +
+        '<td class="n">' + fmt(row.trPerCarDay, 2) + '</td><td class="n sep">' + (row.boltDays ? fmt(row.boltOrders, 0) : "—") +
+        '</td><td class="n">' + fmt(row.boltFleet, 1) + "</td>" + (perPeriod ? '<td class="n">' + fmt(row.boltPerCar, 2) + "</td>" : "") +
+        '<td class="n">' + fmt(row.boltPerCarDay, 2) + '</td><td class="n sep">' + (row.partial ? "—" : pctOf(row.boltPerDay, row.trPerDay)) + "</td></tr>";
+    }
+    var span = perPeriod ? 4 : 3;
+    var rows = (r.total ? tr(r.total, true) : "") + r.rows.map(function (x) { return tr(x, false); }).join("");
+    var table = '<div class="table-wrap"><table style="min-width:860px"><thead><tr><th rowspan="2">Okres</th><th class="c sep" colspan="' + span + '">Trafficar</th>' +
+      '<th class="c sep" colspan="' + span + '">Bolt</th><th rowspan="2" class="sep">Bolt jako % Trafficara</th></tr><tr>' +
+      '<th class="sep">Zamówień</th><th>Flota</th>' + (perPeriod ? "<th>Na auto</th>" : "") + "<th>Na auto na dobę</th>" +
+      '<th class="sep">Zamówień</th><th>Flota</th>' + (perPeriod ? "<th>Na auto</th>" : "") + "<th>Na auto na dobę</th></tr></thead><tbody>" +
+      rows + "</tbody></table>" + (r.rows.length ? "" : '<div class="empty">W tym okresie nie ma jeszcze zakończonej doby.</div>') + "</div>";
+    return { note: rangeNote(r), table: table };
+  }
+
+  function modelsBody() {
+    var r = calc.models(state.models.from, state.models.to);
+    function tr(m, strong) {
+      return '<tr class="' + (strong ? "strong" : "") + '"><td>' + esc(m.model) + (m.electric ? '<span class="badge">elektryczny</span>' : "") +
+        "</td><td>" + esc(m.kind) + '</td><td class="n">' + fmt(m.cars, 0) + '</td><td class="n">' + fmt(m.orders, 0) + '</td><td class="n">' +
+        (m.share === null ? "—" : pct(m.share * 100)) + '</td><td class="n">' + fmt(m.perDay, 1) + '</td><td class="n">' + fmt(m.perCarDay, 2) + "</td></tr>";
+    }
+    var body = r.rows.map(function (m) { return tr(m, false); }).join("") + (r.total ? tr(r.total, true) : "");
+    var table = r.rows.length
+      ? '<div class="table-wrap"><table style="min-width:760px"><thead><tr><th>Model</th><th>Rodzaj</th><th>Aut we flocie</th><th>Zamówień w okresie</th><th>Udział w zamówieniach</th><th>Zamówień na dobę</th><th>Na auto na dobę</th></tr></thead><tbody>' + body + "</tbody></table></div>"
+      : '<div class="table-wrap"><div class="empty">W tym okresie nie ma jeszcze zakończonej doby z odczytami.</div></div>';
+    return { note: '<p class="muted small">Pokazuję ' + day(r.from) + " – " + day(r.to) + ". Liczone z " + r.closedDays + " zakończonych dób z odczytami.</p>", table: table };
+  }
+
+  var TEXT = {
+    fleet: ["Wielkość floty", "Trafficar: auta carsharingowe w Warszawie, które widać na mapie danego dnia lub dobę wcześniej, oraz średnia liczba wolnych aut z odczytów. Bolt: liczba aut z Databricks. Hulajnogi są pominięte.", true, fleetBody],
+    orders: ["Zamówienia i zamówienia na auto", "Zamówienie Trafficara to przejazd wykryty po tym, że auto znika z mapy i wraca w innym miejscu (lub z mniejszą ilością paliwa). Anulowane rezerwacje się nie liczą. Bolt to zamówienia z arkusza: zakończone, w trakcie, zarezerwowane i wstrzymane. Na auto to zamówienia podzielone przez flotę z tego samego okresu.", true, ordersBody],
+    models: ["Zamówienia Trafficara według modelu", "Podział przejazdów Trafficara na modele aut, liczony z zakończonych dób wybranego okresu. Aut we flocie to stan z ostatniej doby okresu, a „na auto na dobę” uwzględnia, od kiedy dane auto jest we flocie.", false, modelsBody]
+  };
+
+  function renderSection(id) {
+    var t = TEXT[id];
+    document.getElementById(id).innerHTML = shell(id, t[0], t[1], t[2], t[3]());
+  }
+  function renderAll() {
+    document.getElementById("global").innerHTML = picker("global", true);
+    SECTIONS.forEach(renderSection);
+  }
+
+  function apply(scope, patch) {
+    var targets = scope === "global" ? ["global"].concat(SECTIONS) : [scope];
+    targets.forEach(function (t) { Object.keys(patch).forEach(function (k) { state[t][k] = patch[k]; }); });
+    if (scope === "global") renderAll(); else renderSection(scope);
+  }
+
+  document.addEventListener("click", function (e) {
+    var el = e.target.closest("button.chip");
+    if (!el) return;
+    var scope = el.dataset.scope;
+    if (el.dataset.preset) {
+      var p = presets.filter(function (x) { return x.id === el.dataset.preset; })[0];
+      apply(scope, { preset: p.id, from: p.from, to: p.to });
+    } else if (el.dataset.by) {
+      apply(scope, { by: el.dataset.by });
+    }
+  });
+  document.addEventListener("change", function (e) {
+    var el = e.target;
+    if (!el.dataset || !el.dataset.edge || !el.value) return;
+    var st = state[el.dataset.scope], from = st.from, to = st.to;
+    if (el.dataset.edge === "from") from = el.value; else to = el.value;
+    if (from > to) { var tmp = from; from = to; to = tmp; }
+    var match = presets.filter(function (x) { return x.from === from && x.to === to; })[0];
+    apply(el.dataset.scope, { preset: match ? match.id : null, from: from, to: to });
+  });
+
+  var generated = new Date(D.generated_at).toLocaleString("pl-PL", { timeZone: "Europe/Warsaw", dateStyle: "medium", timeStyle: "short" });
+  document.getElementById("meta").textContent = "Stan na " + generated + (D.days.length ? ". Odczyty Trafficara od " + day(D.days[0].day) + "." : ".");
+  var sources = [];
+  if (D.bolt_orders_fetched_at) sources.push("Arkusz zamówień Bolta odczytany " + new Date(D.bolt_orders_fetched_at).toLocaleString("pl-PL", { timeZone: "Europe/Warsaw", dateStyle: "medium", timeStyle: "short" }) + ".");
+  if (D.bolt_latest_order) sources.push("Ostatnie zamówienie w arkuszu: " + D.bolt_latest_order + ".");
+  if (D.errors && D.errors.orders) sources.push("Ostatni błąd odczytu arkusza: " + D.errors.orders + ".");
+  document.getElementById("sources").textContent = sources.join(" ");
+  renderAll();
+})();
+</script>
+</body>
+</html>
