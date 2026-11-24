@@ -3,11 +3,11 @@ import json
 import shutil
 import subprocess
 import tempfile
-import threading
 import unittest
+import urllib.error
 from datetime import datetime, timedelta, timezone
-from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
+from unittest import mock
 from zoneinfo import ZoneInfo
 
 import bolt
@@ -20,11 +20,13 @@ NOW = datetime(2026, 11, 23, 12, 0, tzinfo=timezone.utc)
 SHEET = (
     "Created Time,Registration Number,Order State\n"
     '11/22/2026 10:00:00,WE12345,finished\n'
-    '11/22/2026 11:00:00,we99999,started\n'
+    '11/22/2026 11:00:00,we99999,finished\n'
+    '11/22/2026 11:30:00,WE33333,started\n'
     '11/22/2026 12:00:00,WE11111,cancelled\n'
     '11/22/2026 13:00:00,WE22222,commerce_failed\n'
     '11/22/2026 14:00:00,GA12345,finished\n'
-    '11/23/2026 1:05:09,WA00001,booked\n'
+    '11/23/2026 1:05:09,WA00001,finished\n'
+    '11/23/2026 2:00:00,WA00002,booked\n'
 )
 
 
@@ -72,89 +74,30 @@ class BoltSheetTest(unittest.TestCase):
             bolt.aggregate_sheet("a,b\n1,2\n")
 
 
-class FakeDatabricks(BaseHTTPRequestHandler):
-    calls: list[str] = []
-    pending_first = True
-
-    def log_message(self, *args):
-        pass
-
-    def _send(self, payload, code=200):
-        self.send_response(code)
-        self.send_header("content-type", "application/json")
-        self.end_headers()
-        self.wfile.write(json.dumps(payload).encode())
-
-    def do_POST(self):
-        body = json.loads(self.rfile.read(int(self.headers["content-length"])))
-        FakeDatabricks.calls.append("POST")
-        if self.headers.get("authorization") != "Bearer secret" or body["warehouse_id"] != "wh":
-            return self._send({}, 403)
-        if FakeDatabricks.pending_first:
-            return self._send({"statement_id": "s1", "status": {"state": "PENDING"}})
-        self._send({"status": {"state": "SUCCEEDED"}, "result": {"data_array": [["1337"]]}})
-
-    def do_GET(self):
-        FakeDatabricks.calls.append("GET")
-        self._send({"status": {"state": "SUCCEEDED"}, "result": {"data_array": [["1337"]]}})
-
-
-class DatabricksTest(unittest.TestCase):
+class BoltFleetTest(unittest.TestCase):
     def setUp(self):
-        FakeDatabricks.calls = []
-        FakeDatabricks.pending_first = True
-        self.server = HTTPServer(("127.0.0.1", 0), FakeDatabricks)
-        threading.Thread(target=self.server.serve_forever, daemon=True).start()
-        self.env = {
-            "DATABRICKS_HOST": f"http://127.0.0.1:{self.server.server_port}",
-            "DATABRICKS_TOKEN": "secret",
-            "DATABRICKS_WAREHOUSE_ID": "wh",
-            "DATABRICKS_FLEET_SQL": "select count(*) from fleet",
-        }
         self.tmp = Path(tempfile.mkdtemp())
 
     def tearDown(self):
-        self.server.shutdown()
-        self.server.server_close()
         shutil.rmtree(self.tmp)
 
-    def test_polls_until_the_statement_finishes(self):
-        settings = bolt.databricks_settings(self.env)
-        self.assertEqual(bolt.databricks_fleet_size(settings, poll_s=0), 1337)
-        self.assertEqual(FakeDatabricks.calls, ["POST", "GET"])
+    def test_fleet_is_the_fixed_number_for_each_day_with_orders(self):
+        data = bolt.BoltData(self.tmp / "bolt.json")
+        with mock.patch.object(bolt, "download_sheet", return_value=SHEET):
+            data.refresh()
+        snapshot = data.snapshot()
+        self.assertEqual(snapshot["orders"], {"2026-11-22": 2, "2026-11-23": 1})
+        self.assertEqual(snapshot["fleet"], {"2026-11-22": 490, "2026-11-23": 490})
+        self.assertEqual(bolt.BOLT_FLEET, 490)
 
-    def test_rejects_statements_that_are_not_selects(self):
-        settings = bolt.databricks_settings({**self.env, "DATABRICKS_FLEET_SQL": "drop table fleet"})
-        with self.assertRaises(RuntimeError):
-            bolt.databricks_fleet_size(settings)
-        self.assertEqual(FakeDatabricks.calls, [])
-
-    def test_not_configured_without_all_values(self):
-        self.assertIsNone(bolt.databricks_settings({**self.env, "DATABRICKS_TOKEN": ""}))
-
-    def test_fleet_is_read_once_per_day_from_nine_warsaw_time(self):
-        data = bolt.BoltData(self.tmp / "bolt.json", self.env)
-        before = datetime(2026, 11, 23, 7, 59, tzinfo=timezone.utc)  # 08:59 in Warsaw
-        at_nine = datetime(2026, 11, 23, 8, 0, tzinfo=timezone.utc)  # 09:00 in Warsaw
-        self.assertFalse(data._due_fleet(before))
-        self.assertTrue(data._due_fleet(at_nine))
-        FakeDatabricks.pending_first = False
-        data.refresh(at_nine, orders_due=False, fleet_due=True)
-        self.assertEqual(data.snapshot()["fleet"], {"2026-11-23": 1337})
-        data.last_try["fleet"] = 0.0
-        self.assertFalse(data._due_fleet(at_nine + timedelta(hours=3)))
-        self.assertTrue(data._due_fleet(at_nine + timedelta(days=1)))
-        reloaded = bolt.BoltData(self.tmp / "bolt.json", self.env)
-        self.assertEqual(reloaded.snapshot()["fleet"], {"2026-11-23": 1337})
-
-    def test_failure_is_recorded_and_retried_later(self):
-        data = bolt.BoltData(self.tmp / "bolt.json", {**self.env, "DATABRICKS_TOKEN": "wrong"})
-        at_nine = datetime(2026, 11, 23, 8, 0, tzinfo=timezone.utc)
-        data.refresh(at_nine, orders_due=False, fleet_due=True)
+    def test_failed_download_is_recorded_and_retried_later(self):
+        data = bolt.BoltData(self.tmp / "bolt.json")
+        with mock.patch.object(bolt, "download_sheet", side_effect=urllib.error.URLError("offline")):
+            data.refresh()
         snapshot = data.snapshot()
         self.assertEqual(snapshot["fleet"], {})
-        self.assertIn("403", snapshot["errors"]["fleet"])
-        self.assertFalse(data._due_fleet(at_nine))
+        self.assertIn("offline", snapshot["errors"]["orders"])
+        self.assertFalse(data._due(NOW))
 
 
 class RegistryTest(unittest.TestCase):
@@ -180,7 +123,6 @@ class ReportTest(unittest.TestCase):
             self.tmp,
             {"orders": {"2026-11-22": 700, "2026-11-21": 600}, "fleet": {"2026-11-22": 1000}, "errors": {}},
             NOW,
-            True,
         )
 
     def tearDown(self):
