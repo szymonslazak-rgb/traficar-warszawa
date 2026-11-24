@@ -1,0 +1,2 @@
+car_id,reg_plate,model,start_at,end_at,minutes,distance_km,fuel_start,fuel_end,range_start,range_end,kind,note
+78621,DW6WM43,RENAULT Arkana,2026-11-24T23:29:40Z,2026-11-24T23:30:40Z,1.0,0.15,81.0,70.0,328,499,rezerwacja,start niepewny
