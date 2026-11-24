@@ -279,17 +279,7 @@ function createCalc(D) {
   function cov(v) { return v === null ? "—" : '<span class="' + (v < calc.LOW ? "warn" : "") + '">' + pct(v) + "</span>"; }
 
   function boltFleetNote() {
-    var days = Object.keys(D.bolt_fleet).sort(), text;
-    if (days.length) {
-      var last = days[days.length - 1];
-      text = "Flota Bolta pochodzi z Databricks, odczyt raz dziennie o 9:00 (Warszawa). Ostatni zapis: " + day(last) + ", " + fmt(D.bolt_fleet[last], 0) +
-        " aut. Między zapisami obowiązuje ostatni, a dni przed pierwszym zapisem pokazują „—”.";
-    } else if (D.databricks_configured) {
-      text = "Czekam na pierwszy odczyt floty Bolta z Databricks (codziennie o 9:00).";
-    } else {
-      text = "Połączenie z Databricks nie jest ustawione (sekrety DATABRICKS_* w repozytorium), więc flota Bolta i zamówienia na auto Bolta są puste.";
-    }
-    if (D.errors && D.errors.fleet) text += " Ostatni błąd odczytu: " + D.errors.fleet + ".";
+    var text = "Flota Bolta to stała liczba 490 aut, przyjęta na sztywno. Dni przed pierwszym zamówieniem w arkuszu pokazują „—”.";
     return '<p class="muted small" style="margin-top:12px;max-width:760px">' + esc(text) + "</p>";
   }
 
@@ -347,7 +337,7 @@ function createCalc(D) {
   }
 
   var TEXT = {
-    fleet: ["Wielkość floty", "Trafficar: auta carsharingowe w Warszawie, które widać na mapie danego dnia lub dobę wcześniej, oraz średnia liczba wolnych aut z odczytów. Bolt: liczba aut z Databricks. Hulajnogi są pominięte.", true, fleetBody],
+    fleet: ["Wielkość floty", "Trafficar: auta carsharingowe w Warszawie, które widać na mapie danego dnia lub dobę wcześniej, oraz średnia liczba wolnych aut z odczytów. Bolt: stała flota 490 aut. Hulajnogi są pominięte.", true, fleetBody],
     orders: ["Zamówienia i zamówienia na auto", "Zamówienie Trafficara to przejazd wykryty po tym, że auto znika z mapy i wraca w innym miejscu (lub z mniejszą ilością paliwa). Anulowane rezerwacje się nie liczą. Bolt to zamówienia z arkusza: zakończone, w trakcie, zarezerwowane i wstrzymane. Na auto to zamówienia podzielone przez flotę z tego samego okresu.", true, ordersBody],
     models: ["Zamówienia Trafficara według modelu", "Podział przejazdów Trafficara na modele aut, liczony z zakończonych dób wybranego okresu. Aut we flocie to stan z ostatniej doby okresu, a „na auto na dobę” uwzględnia, od kiedy dane auto jest we flocie.", false, modelsBody]
   };
