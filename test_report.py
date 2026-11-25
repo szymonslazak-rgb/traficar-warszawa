@@ -135,6 +135,47 @@ class ReportTest(unittest.TestCase):
         self.assertEqual(day["free"], 110.0)
         self.assertEqual(day["coverage"], 100.0)
 
+    def test_start_is_the_first_full_day_of_readings(self):
+        self.assertEqual(self.data["start"], "2026-11-17")
+        partial = Path(tempfile.mkdtemp())
+        try:
+            make_data(partial)
+            first = partial / "reads" / "2026-11-17.csv"
+            with first.open(encoding="utf-8") as handle:
+                rows = list(csv.DictReader(handle))[758:]
+            write_csv(first, ["taken_at", "available", "ok"], rows)
+            self.assertEqual(build_data(partial, {}, NOW)["start"], "2026-11-18")
+        finally:
+            shutil.rmtree(partial)
+
+    def test_tables_ignore_days_before_the_common_start(self):
+        html = render(self.data)
+        start = html.index('<script id="calc">') + len('<script id="calc">')
+        calc_js = html[start : html.index("</script>", start)]
+        data = dict(self.data, start="2026-11-22", bolt_orders={"2026-11-20": 500, "2026-11-22": 700})
+        script = (
+            calc_js
+            + f"\nconst D = {json.dumps(data)};\nconst c = createCalc(D);"
+            + """
+            const r = c.groupRows('2026-11-17', '2026-11-23', 'day');
+            const before = c.groupRows('2026-11-17', '2026-11-20', 'day');
+            console.log(JSON.stringify({ from: r.from, days: r.rows.length, total: r.total,
+              empty: before.rows.length, presets: c.presets().map(p => p.from) }));
+            """
+        )
+        try:
+            result = subprocess.run(["node", "-e", script], capture_output=True, text=True, timeout=30)
+        except FileNotFoundError:
+            self.skipTest("node is not installed")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        out = json.loads(result.stdout)
+        self.assertEqual(out["from"], "2026-11-22")
+        self.assertEqual(out["days"], 2)
+        self.assertEqual(out["total"]["boltOrders"], 700)
+        self.assertEqual(out["total"]["trOrders"], 40)
+        self.assertEqual(out["empty"], 0)
+        self.assertTrue(all(f >= "2026-11-22" for f in out["presets"]))
+
     def test_html_embeds_the_data_and_is_self_contained(self):
         html = render(self.data)
         self.assertIn('"bolt_fleet":{"2026-11-22":1000}', html)
