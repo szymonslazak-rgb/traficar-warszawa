@@ -50,6 +50,13 @@ def build_data(root: Path, bolt: dict, now: datetime) -> dict:
             first_read = min(_parse(r["taken_at"]) for r in reads)
             break
 
+    start_day = None
+    if first_read is not None:
+        local = first_read.astimezone(WARSAW)
+        midnight = local.replace(hour=0, minute=0, second=0, microsecond=0)
+        start_date = local.date() if local - midnight <= timedelta(minutes=10) else local.date() + timedelta(days=1)
+        start_day = start_date.isoformat()
+
     out_days = []
     for day in days:
         reads = [r for r in _rows(root / "reads" / f"{day}.csv") if r.get("ok") == "1"]
@@ -86,6 +93,7 @@ def build_data(root: Path, bolt: dict, now: datetime) -> dict:
     return {
         "generated_at": now.astimezone(timezone.utc).isoformat(timespec="seconds"),
         "today": today,
+        "start": start_day,
         "days": out_days,
         "cars": cars,
         "bolt_orders": bolt.get("orders") or {},
