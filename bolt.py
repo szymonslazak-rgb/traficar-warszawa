@@ -21,7 +21,6 @@ SHEET_ID = "1JBw3vbYue_LEH_Boc4Gna6IvzAD4kyUHNHGwyr5lXE0"
 ORDERS_GID = "1458960516"
 SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv&gid={ORDERS_GID}"
 
-WARSAW_PREFIXES = {"WA", "WB", "WD", "WE", "WF", "WG", "WH", "WI", "WJ", "WK", "WN", "WT", "WU", "WW", "WX", "WY", "WZ"}
 COUNTED_STATES = {"finished"}
 
 BOLT_FLEET = 490
@@ -32,7 +31,7 @@ _TIME = re.compile(r"^(\d{1,2})/(\d{1,2})/(\d{4}) (\d{1,2}):(\d{2}):(\d{2})$")
 
 
 def aggregate_sheet(text: str) -> tuple[dict[str, int], str | None]:
-    """Counts Warsaw orders per day and returns the newest order time as it appears in the sheet."""
+    """Counts finished orders per day and returns the newest order time as it appears in the sheet."""
     rows = list(csv.reader(io.StringIO(text)))
     header = rows[0] if rows else []
     try:
@@ -48,8 +47,6 @@ def aggregate_sheet(text: str) -> tuple[dict[str, int], str | None]:
         if len(row) <= max(time_i, plate_i, state_i):
             continue
         if row[state_i].strip() not in COUNTED_STATES:
-            continue
-        if row[plate_i].strip().upper()[:2] not in WARSAW_PREFIXES:
             continue
         created = row[time_i].strip()
         match = _TIME.match(created)
