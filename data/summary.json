@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-25T05:08:40Z",
+ "generated_at": "2026-11-25T05:14:40Z",
  "zone": "Warszawa",
  "days": [
   {
@@ -29,8 +29,8 @@
     "RENAULT Master": 2
    },
    "avg_available": 517.4,
-   "reads": 340,
-   "coverage_pct": 92.4
+   "reads": 345,
+   "coverage_pct": 92.2
   }
  ],
  "periods": {
