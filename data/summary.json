@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-25T01:58:40Z",
+ "generated_at": "2026-11-25T02:08:40Z",
  "zone": "Warszawa",
  "days": [
   {
@@ -28,16 +28,16 @@
     "DACIA Sandero": 2,
     "RENAULT Master": 2
    },
-   "avg_available": 514.8,
-   "reads": 150,
-   "coverage_pct": 84.3
+   "avg_available": 515.1,
+   "reads": 160,
+   "coverage_pct": 85.1
   }
  ],
  "periods": {
   "doba": {
    "days": 1,
    "avg_trips_per_day": 12.0,
-   "avg_available": 514.8,
+   "avg_available": 515.1,
    "avg_trips_per_day_by_model": {
     "RENAULT Clio V": 5.0,
     "RENAULT Arkana": 3.0,
