@@ -19,7 +19,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 355
     steps:
+      # A scheduled run is handed the commit that was newest when it was queued, which is
+      # hours old by the time it starts. Checking out the branch by name gets the tip now,
+      # so the run's own pushes rebase cleanly instead of conflicting and being lost.
       - uses: actions/checkout@v4
+        with:
+          ref: main
 
       - uses: actions/setup-python@v5
         with:
