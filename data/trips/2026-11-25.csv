@@ -89,3 +89,4 @@ car_id,reg_plate,model,start_at,end_at,minutes,distance_km,fuel_start,fuel_end,r
 83555,WND2765E,RENAULT Arkana,2026-11-25T11:01:04Z,2026-11-25T11:22:04Z,21.0,0.97,82.0,80.0,328,571,przejazd,start niepewny
 66633,KK55192,DACIA Sandero,2026-11-25T11:17:04Z,2026-11-25T11:24:04Z,7.0,0.0,56.0,56.0,224,350,rezerwacja,
 74087,KK82541,RENAULT Master,2026-11-25T11:01:04Z,2026-11-25T11:28:04Z,27.0,0.0,80.0,73.0,512,655,przejazd,start niepewny
+68658,KK10143,DACIA Sandero,2026-11-25T11:26:04Z,2026-11-25T11:35:04Z,9.0,0.02,72.0,72.0,288,450,rezerwacja,
