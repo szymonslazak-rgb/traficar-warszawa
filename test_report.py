@@ -75,6 +75,11 @@ class BoltSheetTest(unittest.TestCase):
         self.assertEqual(per_day, {"2026-11-22": 3, "2026-11-23": 1})
         self.assertEqual(latest, "11/23/2026 1:05:09")
 
+    def test_orders_before_the_common_start_are_skipped(self):
+        per_day, latest = bolt.aggregate_sheet(SHEET, datetime(2026, 11, 22, 11, 0, tzinfo=WARSAW))
+        self.assertEqual(per_day, {"2026-11-22": 2, "2026-11-23": 1})
+        self.assertEqual(latest, "11/23/2026 1:05:09")
+
     def test_missing_columns_is_an_error(self):
         with self.assertRaises(ValueError):
             bolt.aggregate_sheet("a,b\n1,2\n")
@@ -82,6 +87,9 @@ class BoltSheetTest(unittest.TestCase):
 
 class BoltFleetTest(unittest.TestCase):
     def setUp(self):
+        patcher = mock.patch.object(bolt, "COMPARE_FROM", datetime(2000, 1, 1, tzinfo=WARSAW))
+        patcher.start()
+        self.addCleanup(patcher.stop)
         self.tmp = Path(tempfile.mkdtemp())
 
     def tearDown(self):
@@ -142,7 +150,7 @@ class OrderRuleTest(unittest.TestCase):
 
 class ReportTest(unittest.TestCase):
     def setUp(self):
-        patcher = mock.patch.object(report, "COMPARE_FROM", "2000-01-01")
+        patcher = mock.patch.object(report, "COMPARE_FROM", datetime(2000, 1, 1, tzinfo=WARSAW))
         patcher.start()
         self.addCleanup(patcher.stop)
         self.tmp = Path(tempfile.mkdtemp())
@@ -177,10 +185,18 @@ class ReportTest(unittest.TestCase):
             shutil.rmtree(partial)
 
     def test_comparison_never_starts_before_the_fixed_start(self):
-        with mock.patch.object(report, "COMPARE_FROM", "2026-11-20"):
-            self.assertEqual(build_data(self.tmp, {}, NOW)["start"], "2026-11-20")
-        with mock.patch.object(report, "COMPARE_FROM", "2026-11-10"):
+        with mock.patch.object(report, "COMPARE_FROM", datetime(2026, 11, 10, tzinfo=WARSAW)):
             self.assertEqual(build_data(self.tmp, {}, NOW)["start"], "2026-11-17")
+        with mock.patch.object(report, "COMPARE_FROM", datetime(2026, 11, 22, 0, 30, tzinfo=WARSAW)):
+            data = build_data(self.tmp, {}, NOW)
+        self.assertEqual(data["start"], "2026-11-22")
+        day = data["days"][-1]
+        self.assertEqual(day["day"], "2026-11-22")
+        self.assertEqual(day["orders"], 0)  # every trip on that day started at midnight, before the start
+        self.assertEqual(day["reads"], 1440 - 30)
+        self.assertEqual(day["coverage"], 100.0)
+        self.assertEqual(data["count_from"], "2026-11-21T23:30:00+00:00")
+        self.assertEqual(data["traficar_until"], "2026-11-22T22:59:00+00:00")
 
     def test_tables_ignore_days_before_the_common_start(self):
         html = render(self.data)
