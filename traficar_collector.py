@@ -1,9 +1,9 @@
 """Reads the Traficar map for Warsaw every minute and infers rentals.
 
-The map lists only free cars. A car that drops off the map is booked; when it
-comes back, its new position, fuel and range tell a real trip apart from a
-reservation that was cancelled. Everything is written as CSV and JSON under
-data/, so a GitHub Actions job can commit it and the next job can resume. Each save also
+The map lists only free cars. A car that drops off the map is booked; it counts as
+a trip only when it comes back at least 5 minutes later somewhere else. Everything is
+written as CSV and JSON under data/, so a GitHub Actions job can commit it and the next
+job can resume. Each save also
 rebuilds the offline report (docs/index.html) from those files and the Bolt numbers.
 """
 
@@ -25,17 +25,14 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from bolt import BoltData
-from report import write_report
+from report import ORDER_MIN_KM, ORDER_MIN_MINUTES, is_order, write_report
 
 API = "https://fioletowe.live/api/v1"
 ZONE_ID = 2
 WARSAW = ZoneInfo("Europe/Warsaw")
 USER_AGENT = "Mozilla/5.0 (compatible; traficar-warszawa/1.0)"
 
-MOVED_KM = 0.3
-FUEL_DROP = 1.0
 RESERVATION_MAX_MIN = 20
-MIN_TRIP_MIN = 5
 GAP_MIN = 3
 FORGET_AFTER = timedelta(days=7)
 SUMMARY_DAYS = 35
@@ -57,7 +54,6 @@ TRIP_FIELDS = [
 ]
 READ_FIELDS = ["taken_at", "available", "ok"]
 
-COUNTED = {"przejazd"}
 CARSHARING_TYPES = {1: "Osobowe", 2: "Dostawcze"}
 
 
@@ -177,15 +173,8 @@ class Snapshot:
         )
 
 
-def classify(minutes: float, distance_km: float, before: Snapshot, after: Snapshot) -> str:
-    if distance_km >= MOVED_KM:
-        return "przejazd"
-    # Range is a model estimate that jumps by tens of km while a car stands still,
-    # so only fuel counts as evidence of a trip that ended where it started.
-    fuel_dropped = (
-        before.fuel is not None and after.fuel is not None and before.fuel - after.fuel >= FUEL_DROP
-    )
-    if fuel_dropped and minutes >= MIN_TRIP_MIN:
+def classify(minutes: float, distance_km: float) -> str:
+    if minutes >= ORDER_MIN_MINUTES and distance_km >= ORDER_MIN_KM:
         return "przejazd"
     if minutes <= RESERVATION_MAX_MIN:
         return "rezerwacja"
@@ -222,14 +211,14 @@ class Detector:
                 note = "start niepewny" if gone.get("uncertain") else ""
                 trips.append(
                     self._trip(car_id, before, now, start, at, minutes, distance,
-                               classify(minutes, distance, before, now), note, models)
+                               classify(minutes, distance), note, models)
                 )
             elif car_id in self.available and gap:
                 before = self.available[car_id]
                 distance = haversine_km(before.lat, before.lng, now.lat, now.lng)
-                if distance >= MOVED_KM:
-                    start = parse_iso(before.seen_at)
-                    minutes = (at - start).total_seconds() / 60
+                start = parse_iso(before.seen_at)
+                minutes = (at - start).total_seconds() / 60
+                if classify(minutes, distance) == "przejazd":
                     trips.append(
                         self._trip(car_id, before, now, start, at, minutes, distance,
                                    "przejazd", "w luce odczytu", models)
@@ -337,7 +326,7 @@ class Store:
             if not reads and not trips:
                 continue
             ok_reads = [r for r in reads if r.get("ok") == "1"]
-            counted = [t for t in trips if t.get("kind") in COUNTED]
+            counted = [t for t in trips if is_order(t)]
             by_model: dict[str, int] = {}
             for trip in counted:
                 by_model[trip["model"]] = by_model.get(trip["model"], 0) + 1
@@ -449,53 +438,4 @@ def main() -> int:
     def flush(now: datetime) -> None:
         store.save_detector(detector)
         registry.save()
-        bolt.save()
-        summary = store.write_summary(now)
-        today = summary["periods"].get("doba") or {}
-        try:
-            write_report(Path(args.data), Path(args.report), bolt.snapshot(), now)
-        except (OSError, ValueError, KeyError) as error:
-            print(f"nie udalo sie zbudowac strony: {error}", file=sys.stderr, flush=True)
-        if args.git:
-            git_push([args.data, str(Path(args.report).parent)], f"Traficar Warszawa {now.astimezone(WARSAW):%Y-%m-%d %H:%M}"
-                     f" · przejazdy dzis {today.get('avg_trips_per_day', 0)}")
-
-    reads = 0
-    while not stopping and time.monotonic() < deadline:
-        started = time.monotonic()
-        now = datetime.now(timezone.utc)
-        try:
-            if not models:
-                models = fetch_models()
-            cars = fetch_cars(carsharing_ids(models))
-            if not cars and len(detector.available) > 3:
-                raise RuntimeError("mapa zwrocila pusta liste")
-            names = {mid: meta["name"] for mid, meta in models.items()}
-            trips = detector.step(now, cars, names)
-            registry.observe(now, cars, models)
-            store.add_trips(trips)
-            store.add_read(now, len(cars), True)
-            counted = sum(1 for t in trips if t["kind"] in COUNTED)
-            print(f"{now.astimezone(WARSAW):%H:%M:%S} wolne={len(cars)} "
-                  f"przejazdy={counted} poza_mapa={len(detector.missing)}", flush=True)
-        except (urllib.error.URLError, TimeoutError, ValueError, KeyError, RuntimeError) as error:
-            store.add_read(now, 0, False)
-            print(f"{now.astimezone(WARSAW):%H:%M:%S} blad odczytu: {error}", file=sys.stderr, flush=True)
-
-        bolt.poke(now)
-        reads += 1
-        if reads % args.save_every == 0:
-            flush(now)
-
-        wait = args.interval - (time.monotonic() - started)
-        while wait > 0 and not stopping and time.monotonic() < deadline:
-            time.sleep(min(wait, 1))
-            wait = args.interval - (time.monotonic() - started)
-
-    bolt.join()
-    flush(datetime.now(timezone.utc))
-    return 0
-
-
-if __name__ == "__main__":
-    sys.exit(main())
+        bolt.
