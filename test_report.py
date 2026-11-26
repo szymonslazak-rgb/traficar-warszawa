@@ -11,8 +11,9 @@ from unittest import mock
 from zoneinfo import ZoneInfo
 
 import bolt
-from report import build_data, render
-from traficar_collector import Registry
+import report
+from report import build_data, is_order, render
+from traficar_collector import Detector, Registry, classify
 
 WARSAW = ZoneInfo("Europe/Warsaw")
 NOW = datetime(2026, 11, 23, 12, 0, tzinfo=timezone.utc)
@@ -48,14 +49,19 @@ def make_data(root: Path) -> None:
             for m in range(1440)
         ]
         write_csv(root / "reads" / f"{day}.csv", ["taken_at", "available", "ok"], reads)
-        trips = [
-            {"model": "RENAULT Clio V", "start_at": reads[0]["taken_at"], "kind": "przejazd"} for _ in range(30)
-        ] + [
-            {"model": "DACIA Dokker", "start_at": reads[0]["taken_at"], "kind": "przejazd"} for _ in range(10)
-        ] + [
-            {"model": "DACIA Dokker", "start_at": reads[0]["taken_at"], "kind": "rezerwacja"} for _ in range(7)
-        ]
-        write_csv(root / "trips" / f"{day}.csv", ["model", "start_at", "kind"], trips)
+
+        def trip(model, minutes, km, kind):
+            return {"model": model, "start_at": reads[0]["taken_at"], "minutes": minutes, "distance_km": km, "kind": kind}
+
+        trips = (
+            [trip("RENAULT Clio V", 25, 3.2, "przejazd") for _ in range(30)]
+            + [trip("DACIA Dokker", 5, 0.3, "przejazd") for _ in range(10)]
+            # Not orders: cancelled reservation, back in place with less fuel, moved in under 5 minutes.
+            + [trip("DACIA Dokker", 8, 0.0, "rezerwacja") for _ in range(7)]
+            + [trip("RENAULT Clio V", 40, 0.1, "przejazd") for _ in range(3)]
+            + [trip("RENAULT Clio V", 4.9, 2.0, "przejazd") for _ in range(2)]
+        )
+        write_csv(root / "trips" / f"{day}.csv", ["model", "start_at", "minutes", "distance_km", "kind"], trips)
     first = (NOW.astimezone(WARSAW).date() - timedelta(days=10)).isoformat()
     last = NOW.astimezone(WARSAW).date().isoformat()
     cars = {str(i): {"model": "RENAULT Clio V", "kind": "Osobowe", "electric": False, "first": first, "last": last} for i in range(8)}
@@ -115,8 +121,30 @@ class RegistryTest(unittest.TestCase):
             self.assertEqual(registry.cars["1"]["last"], "2026-11-24")
 
 
+class OrderRuleTest(unittest.TestCase):
+    def test_order_needs_five_minutes_off_the_map_and_another_place(self):
+        self.assertEqual(classify(5, 0.3), "przejazd")
+        self.assertEqual(classify(4.9, 5.0), "rezerwacja")
+        self.assertEqual(classify(60, 0.29), "postoj")
+        self.assertTrue(is_order({"minutes": "5.0", "distance_km": "0.3"}))
+        self.assertFalse(is_order({"minutes": "45", "distance_km": "0.1", "kind": "przejazd"}))
+        self.assertFalse(is_order({"kind": "przejazd"}))
+
+    def test_car_moved_during_a_read_gap_counts_only_after_five_minutes(self):
+        detector = Detector()
+        car = {"id": 1, "modelId": 15, "lat": 52.2297, "lng": 21.0122, "fuel": 50, "range": 400, "regPlate": "WE1"}
+        moved = dict(car, lat=52.2397)
+        detector.step(NOW, [car], {15: "Toyota"})
+        self.assertEqual(detector.step(NOW + timedelta(minutes=4), [moved], {15: "Toyota"}), [])
+        trips = detector.step(NOW + timedelta(minutes=10), [car], {15: "Toyota"})
+        self.assertEqual([t["kind"] for t in trips], ["przejazd"])
+
+
 class ReportTest(unittest.TestCase):
     def setUp(self):
+        patcher = mock.patch.object(report, "COMPARE_FROM", "2000-01-01")
+        patcher.start()
+        self.addCleanup(patcher.stop)
         self.tmp = Path(tempfile.mkdtemp())
         make_data(self.tmp)
         self.data = build_data(
@@ -147,6 +175,12 @@ class ReportTest(unittest.TestCase):
             self.assertEqual(build_data(partial, {}, NOW)["start"], "2026-11-18")
         finally:
             shutil.rmtree(partial)
+
+    def test_comparison_never_starts_before_the_fixed_start(self):
+        with mock.patch.object(report, "COMPARE_FROM", "2026-11-20"):
+            self.assertEqual(build_data(self.tmp, {}, NOW)["start"], "2026-11-20")
+        with mock.patch.object(report, "COMPARE_FROM", "2026-11-10"):
+            self.assertEqual(build_data(self.tmp, {}, NOW)["start"], "2026-11-17")
 
     def test_tables_ignore_days_before_the_common_start(self):
         html = render(self.data)
