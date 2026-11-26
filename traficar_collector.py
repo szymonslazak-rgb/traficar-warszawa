@@ -358,4 +358,133 @@ class Store:
         out = {}
         finished = [d for d in days if d["day"] != today] or days
         for name, span in (("doba", 1), ("tydzien", 7), ("miesiac", 30)):
-            window = finished[-span:] if span >
+            window = finished[-span:] if span > 1 else [d for d in days if d["day"] == today]
+            if not window:
+                out[name] = None
+                continue
+            fleets = [d["avg_available"] for d in window if d["avg_available"] is not None]
+            by_model: dict[str, int] = {}
+            for d in window:
+                for model, n in d["trips_by_model"].items():
+                    by_model[model] = by_model.get(model, 0) + n
+            out[name] = {
+                "days": len(window),
+                "avg_trips_per_day": round(sum(d["trips"] for d in window) / len(window), 1),
+                "avg_available": round(sum(fleets) / len(fleets), 1) if fleets else None,
+                "avg_trips_per_day_by_model": {
+                    m: round(n / len(window), 1)
+                    for m, n in sorted(by_model.items(), key=lambda kv: -kv[1])
+                },
+            }
+        return out
+
+    def _rows(self, folder: str, day: str) -> list[dict]:
+        path = self.root / folder / f"{day}.csv"
+        if not path.exists():
+            return []
+        with path.open(newline="", encoding="utf-8") as handle:
+            return list(csv.DictReader(handle))
+
+
+def git_push(paths: list[str], message: str) -> None:
+    def run(*args: str, check: bool = True) -> subprocess.CompletedProcess:
+        return subprocess.run(["git", *args], check=check, capture_output=True, text=True)
+
+    run("add", "--", *paths)
+    if run("diff", "--cached", "--quiet", check=False).returncode == 0:
+        return
+    run("commit", "-m", message)
+    upstream = run("rev-parse", "--abbrev-ref", "@{upstream}", check=False).stdout.strip()
+    remote, _, branch = upstream.partition("/")
+    if not branch:
+        remote, branch = "origin", run("rev-parse", "--abbrev-ref", "HEAD").stdout.strip()
+    error = ""
+    for attempt in range(4):
+        pulled = run("pull", "--rebase", "--autostash", remote, branch, check=False)
+        pushed = run("push", remote, f"HEAD:{branch}", check=False) if pulled.returncode == 0 else pulled
+        if pushed.returncode == 0:
+            return
+        error = pushed.stderr.strip().splitlines()[-1:] or [""]
+        error = error[0]
+        time.sleep(4 * 2 ** attempt)
+    print(f"git push nie powiodl sie ({error}), sprobuje przy nastepnym zapisie", file=sys.stderr)
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--minutes", type=float, default=345, help="jak dlugo czytac mape")
+    parser.add_argument("--interval", type=float, default=60, help="sekundy miedzy odczytami")
+    parser.add_argument("--data", default="data", help="folder z danymi")
+    parser.add_argument("--save-every", type=int, default=10, help="zapis co tyle odczytow")
+    parser.add_argument("--report", default="docs/index.html", help="plik strony z tabelami")
+    parser.add_argument("--git", action="store_true", help="commit i push danych")
+    args = parser.parse_args()
+
+    store = Store(Path(args.data))
+    detector = store.load_detector()
+    registry = Registry(Path(args.data) / "cars.json")
+    bolt = BoltData(Path(args.data) / "bolt.json")
+    models: dict[int, dict] = {}
+    deadline = time.monotonic() + args.minutes * 60
+    stopping = False
+
+    def stop(*_: object) -> None:
+        nonlocal stopping
+        stopping = True
+
+    signal.signal(signal.SIGTERM, stop)
+    signal.signal(signal.SIGINT, stop)
+
+    def flush(now: datetime) -> None:
+        store.save_detector(detector)
+        registry.save()
+        bolt.save()
+        summary = store.write_summary(now)
+        today = summary["periods"].get("doba") or {}
+        try:
+            write_report(Path(args.data), Path(args.report), bolt.snapshot(), now)
+        except (OSError, ValueError, KeyError) as error:
+            print(f"nie udalo sie zbudowac strony: {error}", file=sys.stderr, flush=True)
+        if args.git:
+            git_push([args.data, str(Path(args.report).parent)], f"Traficar Warszawa {now.astimezone(WARSAW):%Y-%m-%d %H:%M}"
+                     f" · przejazdy dzis {today.get('avg_trips_per_day', 0)}")
+
+    reads = 0
+    while not stopping and time.monotonic() < deadline:
+        started = time.monotonic()
+        now = datetime.now(timezone.utc)
+        try:
+            if not models:
+                models = fetch_models()
+            cars = fetch_cars(carsharing_ids(models))
+            if not cars and len(detector.available) > 3:
+                raise RuntimeError("mapa zwrocila pusta liste")
+            names = {mid: meta["name"] for mid, meta in models.items()}
+            trips = detector.step(now, cars, names)
+            registry.observe(now, cars, models)
+            store.add_trips(trips)
+            store.add_read(now, len(cars), True)
+            counted = sum(1 for t in trips if is_order(t))
+            print(f"{now.astimezone(WARSAW):%H:%M:%S} wolne={len(cars)} "
+                  f"przejazdy={counted} poza_mapa={len(detector.missing)}", flush=True)
+        except (urllib.error.URLError, TimeoutError, ValueError, KeyError, RuntimeError) as error:
+            store.add_read(now, 0, False)
+            print(f"{now.astimezone(WARSAW):%H:%M:%S} blad odczytu: {error}", file=sys.stderr, flush=True)
+
+        bolt.poke(now)
+        reads += 1
+        if reads % args.save_every == 0:
+            flush(now)
+
+        wait = args.interval - (time.monotonic() - started)
+        while wait > 0 and not stopping and time.monotonic() < deadline:
+            time.sleep(min(wait, 1))
+            wait = args.interval - (time.monotonic() - started)
+
+    bolt.join()
+    flush(datetime.now(timezone.utc))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
