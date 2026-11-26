@@ -345,7 +345,7 @@ function createCalc(D) {
 
   var TEXT = {
     fleet: ["Wielkość floty", "Trafficar: auta carsharingowe w Warszawie, które widać na mapie danego dnia lub dobę wcześniej, oraz średnia liczba wolnych aut z odczytów. Bolt: stała flota 490 aut. Hulajnogi są pominięte.", true, fleetBody],
-    orders: ["Zamówienia i zamówienia na auto", "Zamówienie Trafficara to auto, które zniknęło z mapy i pojawiło się ponownie co najmniej 5 minut później w innym miejscu (co najmniej 300 m dalej). Nic innego się nie liczy. Bolt to zakończone zamówienia z arkusza (bez anulowanych i trwających). Na auto to zamówienia podzielone przez flotę z tego samego okresu.", true, ordersBody],
+    orders: ["Zamówienia i zamówienia na auto", "Zamówienie Trafficara to auto, które zniknęło z mapy i pojawiło się ponownie co najmniej 5 minut później w innym miejscu (co najmniej 300 m dalej). Nic innego się nie liczy. Bolt to wszystkie zamówienia z arkusza rozpoczęte danego dnia, także trwające, bez anulowanych i nieudanych płatności. Na auto to zamówienia podzielone przez flotę z tego samego okresu.", true, ordersBody],
     models: ["Zamówienia Trafficara według modelu", "Podział przejazdów Trafficara na modele aut, liczony z zakończonych dób wybranego okresu. Aut we flocie to stan z ostatniej doby okresu, a „na auto na dobę” uwzględnia, od kiedy dane auto jest we flocie.", false, modelsBody]
   };
 
