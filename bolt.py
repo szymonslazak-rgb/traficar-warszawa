@@ -1,6 +1,6 @@
 """Bolt side of the report: orders from the public Google Sheet, fleet as a fixed number.
 
-Orders are read from the sheet at most once an hour, in a background thread, so a slow
+Orders are read from the sheet every 15 minutes, in a background thread, so a slow
 download never delays a map read. Results live in data/bolt.json.
 """
 
@@ -17,6 +17,8 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
+from report import COMPARE_FROM
+
 SHEET_ID = "1JBw3vbYue_LEH_Boc4Gna6IvzAD4kyUHNHGwyr5lXE0"
 ORDERS_GID = "1458960516"
 SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv&gid={ORDERS_GID}"
@@ -24,14 +26,18 @@ SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=cs
 COUNTED_STATES = {"finished"}
 
 BOLT_FLEET = 490
-ORDERS_TTL_S = 3600
-RETRY_S = 600
+ORDERS_TTL_S = 900
+RETRY_S = 300
 
 _TIME = re.compile(r"^(\d{1,2})/(\d{1,2})/(\d{4}) (\d{1,2}):(\d{2}):(\d{2})$")
 
 
-def aggregate_sheet(text: str) -> tuple[dict[str, int], str | None]:
-    """Counts finished orders per day and returns the newest order time as it appears in the sheet."""
+def aggregate_sheet(text: str, since: datetime | None = None) -> tuple[dict[str, int], str | None]:
+    """Counts finished orders per day and returns the newest order time as it appears in the sheet.
+
+    Created Time is Warsaw local time; orders created before `since` are skipped.
+    """
+    cutoff = since.replace(tzinfo=None) if since is not None else None
     rows = list(csv.reader(io.StringIO(text)))
     header = rows[0] if rows else []
     try:
@@ -56,6 +62,8 @@ def aggregate_sheet(text: str) -> tuple[dict[str, int], str | None]:
         try:
             stamp = datetime(year, month, day, hour, minute, second)
         except ValueError:
+            continue
+        if cutoff is not None and stamp < cutoff:
             continue
         key = stamp.date().isoformat()
         per_day[key] = per_day.get(key, 0) + 1
@@ -120,7 +128,7 @@ class BoltData:
     def refresh(self) -> None:
         self.last_try = time.monotonic()
         try:
-            per_day, latest = aggregate_sheet(download_sheet())
+            per_day, latest = aggregate_sheet(download_sheet(), COMPARE_FROM)
             with self.lock:
                 self.data.update(
                     orders=per_day,
