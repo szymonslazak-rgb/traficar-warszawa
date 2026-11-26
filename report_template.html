@@ -177,7 +177,9 @@ function createCalc(D) {
 
   function models(from, to) {
     var r = clamp(from, to);
-    var rows = dayRows(r[0], r[1]).filter(function (x) { return !x.today && x.trHas; });
+    var seen = dayRows(r[0], r[1]).filter(function (x) { return x.trHas; });
+    var closedRows = seen.filter(function (x) { return !x.today; });
+    var rows = closedRows.length ? closedRows : seen;
     var by = {};
     function get(name, meta) {
       if (!by[name]) by[name] = { model: name, kind: meta ? meta.kind : "", electric: meta ? meta.electric : false, cars: 0, orders: 0, carDays: 0 };
@@ -207,7 +209,7 @@ function createCalc(D) {
       share: totalOrders ? 1 : null, perDay: days ? totalOrders / days : null,
       perCarDay: totalCarDays ? totalOrders / totalCarDays : null
     } : null;
-    return { from: str(r[0]), to: str(r[1]), rows: list, total: total, closedDays: days };
+    return { from: str(r[0]), to: str(r[1]), rows: list, total: total, closedDays: closedRows.length, days: days };
   }
 
   function presets() {
@@ -271,6 +273,7 @@ function createCalc(D) {
 
   function rangeNote(r) {
     if (r.from > r.to) return '<p class="muted small">W tym okresie nie ma dni, które da się porównać. Zestawienia zaczynają się od ' + day(D.start) + ".</p>";
+    if (!r.closedDays) return '<p class="muted small">Pokazuję ' + day(r.from) + " – " + day(r.to) + ". Nie ma jeszcze zakończonej doby, więc widać tylko dzisiejszy, trwający dzień. Podsumowanie okresu pojawi się po północy.</p>";
     var text = "Pokazuję " + day(r.from) + " – " + day(r.to) + ".";
     if (r.lowCoverageDays > 0) {
       text += " " + r.lowCoverageDays + " z " + r.closedDays + " zakończonych dni ma pokrycie odczytów mapy poniżej " + calc.LOW + "%, więc dane Trafficara z tych dni są niedoszacowane.";
@@ -336,7 +339,8 @@ function createCalc(D) {
     var table = r.rows.length
       ? '<div class="table-wrap"><table style="min-width:760px"><thead><tr><th>Model</th><th>Rodzaj</th><th>Aut we flocie</th><th>Zamówień w okresie</th><th>Udział w zamówieniach</th><th>Zamówień na dobę</th><th>Na auto na dobę</th></tr></thead><tbody>' + body + "</tbody></table></div>"
       : '<div class="table-wrap"><div class="empty">W tym okresie nie ma jeszcze zakończonej doby z odczytami.</div></div>';
-    return { note: r.from > r.to ? rangeNote(r) : '<p class="muted small">Pokazuję ' + day(r.from) + " – " + day(r.to) + ". Liczone z " + r.closedDays + " zakończonych dób z odczytami.</p>", table: table };
+    var basis = r.closedDays ? "Liczone z " + r.closedDays + " zakończonych dób z odczytami." : "Liczone z dzisiejszego, trwającego dnia; od jutra tylko z zakończonych dób.";
+    return { note: r.from > r.to ? rangeNote(r) : '<p class="muted small">Pokazuję ' + day(r.from) + " – " + day(r.to) + ". " + basis + "</p>", table: table };
   }
 
   var TEXT = {
@@ -381,8 +385,18 @@ function createCalc(D) {
     apply(el.dataset.scope, { preset: match ? match.id : null, from: from, to: to });
   });
 
+  function clock(iso) { return iso ? new Date(iso).toLocaleTimeString("pl-PL", { timeZone: "Europe/Warsaw", hour: "2-digit", minute: "2-digit" }) : "—"; }
+  function sheetClock(s) {
+    var m = /(\d{1,2}):(\d{2}):\d{2}$/.exec(s || "");
+    return m ? m[1].padStart(2, "0") + ":" + m[2] : "—";
+  }
   var generated = new Date(D.generated_at).toLocaleString("pl-PL", { timeZone: "Europe/Warsaw", dateStyle: "medium", timeStyle: "short" });
-  document.getElementById("meta").textContent = "Stan na " + generated + (D.start ? ". Zestawienia liczone od " + day(D.start) + ", czyli od pierwszej pełnej doby odczytów Trafficara bez przerw i według obecnej reguły liczenia zamówień. Wcześniejsze dni obu firm są pominięte, żeby porównywać te same dni." : ".");
+  var countFrom = D.count_from ? new Date(D.count_from).toLocaleString("pl-PL", { timeZone: "Europe/Warsaw", dateStyle: "medium", timeStyle: "short" }) : null;
+  document.getElementById("meta").textContent = "Stan na " + generated +
+    (countFrom ? ". Zamówienia obu firm liczone od " + countFrom + ": od tej chwili odczyty Trafficara idą bez przerw i według obecnej reguły. Wcześniejsze zamówienia są pominięte." : ".") +
+    " Dzisiejszy wiersz rośnie na bieżąco: Trafficar do " + clock(D.traficar_until) + ", Bolt do " + sheetClock(D.bolt_latest_order) +
+    " (arkusz odświeża się co godzinę). Strona sama się przeładowuje co 5 minut.";
+  setTimeout(function () { location.reload(); }, 5 * 60 * 1000);
   var sources = [];
   if (D.bolt_orders_fetched_at) sources.push("Arkusz zamówień Bolta odczytany " + new Date(D.bolt_orders_fetched_at).toLocaleString("pl-PL", { timeZone: "Europe/Warsaw", dateStyle: "medium", timeStyle: "short" }) + ".");
   if (D.bolt_latest_order) sources.push("Ostatnie zamówienie w arkuszu: " + D.bolt_latest_order + ".");
