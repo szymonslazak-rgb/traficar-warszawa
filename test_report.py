@@ -23,9 +23,12 @@ SHEET = (
     '11/22/2026 10:00:00,WE12345,finished\n'
     '11/22/2026 11:00:00,we99999,finished\n'
     '11/22/2026 11:30:00,WE33333,started\n'
-    '11/22/2026 12:00:00,WE11111,cancelled\n'
-    '11/22/2026 13:00:00,WE22222,commerce_failed\n'
+    '11/22/2026 12:00:00,WE11111,booking_cancelled\n'
+    '11/22/2026 13:00:00,WE22222,cancelled_commerce_fail\n'
+    '11/22/2026 13:30:00,WE44444,cancelled_booking_fail\n'
     '11/22/2026 14:00:00,GA12345,finished\n'
+    '11/22/2026 15:00:00,WG55555,paused\n'
+    '11/22/2026 16:00:00,WG66666,\n'
     '11/23/2026 1:05:09,WA00001,finished\n'
     '11/23/2026 2:00:00,WA00002,booked\n'
 )
@@ -70,15 +73,15 @@ def make_data(root: Path) -> None:
 
 
 class BoltSheetTest(unittest.TestCase):
-    def test_counts_finished_orders_per_day(self):
+    def test_counts_every_order_except_cancelled_ones_by_creation_day(self):
         per_day, latest = bolt.aggregate_sheet(SHEET)
-        self.assertEqual(per_day, {"2026-11-22": 3, "2026-11-23": 1})
-        self.assertEqual(latest, "11/23/2026 1:05:09")
+        self.assertEqual(per_day, {"2026-11-22": 5, "2026-11-23": 2})
+        self.assertEqual(latest, "11/23/2026 2:00:00")
 
     def test_orders_before_the_common_start_are_skipped(self):
         per_day, latest = bolt.aggregate_sheet(SHEET, datetime(2026, 11, 22, 11, 0, tzinfo=WARSAW))
-        self.assertEqual(per_day, {"2026-11-22": 2, "2026-11-23": 1})
-        self.assertEqual(latest, "11/23/2026 1:05:09")
+        self.assertEqual(per_day, {"2026-11-22": 4, "2026-11-23": 2})
+        self.assertEqual(latest, "11/23/2026 2:00:00")
 
     def test_missing_columns_is_an_error(self):
         with self.assertRaises(ValueError):
@@ -100,7 +103,7 @@ class BoltFleetTest(unittest.TestCase):
         with mock.patch.object(bolt, "download_sheet", return_value=SHEET):
             data.refresh()
         snapshot = data.snapshot()
-        self.assertEqual(snapshot["orders"], {"2026-11-22": 3, "2026-11-23": 1})
+        self.assertEqual(snapshot["orders"], {"2026-11-22": 5, "2026-11-23": 2})
         self.assertEqual(snapshot["fleet"], {"2026-11-22": 490, "2026-11-23": 490})
         self.assertEqual(bolt.BOLT_FLEET, 490)
 
