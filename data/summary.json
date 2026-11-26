@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-26T18:03:39Z",
+ "generated_at": "2026-11-26T18:13:39Z",
  "zone": "Warszawa",
  "days": [
   {
@@ -19,10 +19,10 @@
   },
   {
    "day": "2026-11-25",
-   "trips": 346,
+   "trips": 347,
    "reservations": 51,
    "trips_by_model": {
-    "RENAULT Clio V": 169,
+    "RENAULT Clio V": 170,
     "RENAULT Arkana": 121,
     "DACIA Sandero": 46,
     "DACIA Dokker": 5,
@@ -35,30 +35,30 @@
   },
   {
    "day": "2026-11-26",
-   "trips": 192,
-   "reservations": 57,
+   "trips": 197,
+   "reservations": 58,
    "trips_by_model": {
-    "RENAULT Clio V": 86,
-    "RENAULT Arkana": 78,
-    "DACIA Sandero": 18,
+    "RENAULT Clio V": 89,
+    "RENAULT Arkana": 79,
+    "DACIA Sandero": 19,
     "RENAULT Master": 5,
     "DACIA Dokker": 4,
     "RENAULT Kangoo": 1
    },
-   "avg_available": 430.0,
-   "reads": 505,
-   "coverage_pct": 44.2
+   "avg_available": 429.6,
+   "reads": 515,
+   "coverage_pct": 44.7
   }
  ],
  "periods": {
   "doba": {
    "days": 1,
-   "avg_trips_per_day": 192.0,
-   "avg_available": 430.0,
+   "avg_trips_per_day": 197.0,
+   "avg_available": 429.6,
    "avg_trips_per_day_by_model": {
-    "RENAULT Clio V": 86.0,
-    "RENAULT Arkana": 78.0,
-    "DACIA Sandero": 18.0,
+    "RENAULT Clio V": 89.0,
+    "RENAULT Arkana": 79.0,
+    "DACIA Sandero": 19.0,
     "RENAULT Master": 5.0,
     "DACIA Dokker": 4.0,
     "RENAULT Kangoo": 1.0
@@ -66,10 +66,10 @@
   },
   "tydzien": {
    "days": 2,
-   "avg_trips_per_day": 281.5,
+   "avg_trips_per_day": 282.0,
    "avg_available": 460.7,
    "avg_trips_per_day_by_model": {
-    "RENAULT Clio V": 134.0,
+    "RENAULT Clio V": 134.5,
     "RENAULT Arkana": 101.0,
     "DACIA Sandero": 36.5,
     "RENAULT Master": 5.0,
@@ -79,10 +79,10 @@
   },
   "miesiac": {
    "days": 2,
-   "avg_trips_per_day": 281.5,
+   "avg_trips_per_day": 282.0,
    "avg_available": 460.7,
    "avg_trips_per_day_by_model": {
-    "RENAULT Clio V": 134.0,
+    "RENAULT Clio V": 134.5,
     "RENAULT Arkana": 101.0,
     "DACIA Sandero": 36.5,
     "RENAULT Master": 5.0,
