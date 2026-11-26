@@ -1,0 +1,2 @@
+car_id,reg_plate,model,start_at,end_at,minutes,distance_km,fuel_start,fuel_end,range_start,range_end,kind,note
+78764,WE1AG74,RENAULT Arkana,2026-11-26T23:20:50Z,2026-11-26T23:37:50Z,17.0,5.37,87.0,87.0,352,628,przejazd,
