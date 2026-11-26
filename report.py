@@ -16,9 +16,9 @@ from zoneinfo import ZoneInfo
 WARSAW = ZoneInfo("Europe/Warsaw")
 ORDER_MIN_MINUTES = 5
 ORDER_MIN_KM = 0.3
-# First full day collected without gaps under the current counting rule; earlier days are kept
-# in data/ but left out of the comparison.
-COMPARE_FROM = "2026-11-27"
+# Collection has run without gaps under the current counting rule since this moment. Orders of
+# both companies before it stay in data/ but are left out of the comparison.
+COMPARE_FROM = datetime(2026, 11, 26, 10, 15, tzinfo=WARSAW)
 TEMPLATE = Path(__file__).with_name("report_template.html")
 
 
@@ -68,23 +68,35 @@ def build_data(root: Path, bolt: dict, now: datetime) -> dict:
             break
 
     start_day = None
+    count_from = COMPARE_FROM
     if first_read is not None:
         local = first_read.astimezone(WARSAW)
         midnight = local.replace(hour=0, minute=0, second=0, microsecond=0)
-        start_date = local.date() if local - midnight <= timedelta(minutes=10) else local.date() + timedelta(days=1)
-        start_day = max(start_date.isoformat(), COMPARE_FROM)
+        if local - midnight > timedelta(minutes=10):
+            midnight += timedelta(days=1)
+        count_from = max(midnight, COMPARE_FROM)
+        start_day = count_from.astimezone(WARSAW).date().isoformat()
 
     out_days = []
+    last_read: datetime | None = None
     for day in days:
-        reads = [r for r in _rows(root / "reads" / f"{day}.csv") if r.get("ok") == "1"]
-        trips = [t for t in _rows(root / "trips" / f"{day}.csv") if is_order(t)]
+        reads = [
+            r for r in _rows(root / "reads" / f"{day}.csv")
+            if r.get("ok") == "1" and _parse(r["taken_at"]) >= count_from
+        ]
+        if reads:
+            last_read = _parse(reads[-1]["taken_at"])
+        trips = [
+            t for t in _rows(root / "trips" / f"{day}.csv")
+            if is_order(t) and _parse(t["start_at"]) >= count_from
+        ]
         by_model: dict[str, int] = {}
         for trip in trips:
             by_model[trip["model"]] = by_model.get(trip["model"], 0) + 1
 
         start = datetime.fromisoformat(day).replace(tzinfo=WARSAW)
         end = (datetime.fromisoformat(day) + timedelta(days=1)).replace(tzinfo=WARSAW)
-        window_start = max(start.astimezone(timezone.utc), first_read or start)
+        window_start = max(start.astimezone(timezone.utc), first_read or start, count_from)
         window_end = min(end.astimezone(timezone.utc), now)
         expected = max(1.0, (window_end - window_start).total_seconds() / 60)
         out_days.append(
@@ -111,6 +123,8 @@ def build_data(root: Path, bolt: dict, now: datetime) -> dict:
         "generated_at": now.astimezone(timezone.utc).isoformat(timespec="seconds"),
         "today": today,
         "start": start_day,
+        "count_from": count_from.astimezone(timezone.utc).isoformat(timespec="seconds"),
+        "traficar_until": last_read.astimezone(timezone.utc).isoformat(timespec="seconds") if last_read else None,
         "days": out_days,
         "cars": cars,
         "bolt_orders": bolt.get("orders") or {},
