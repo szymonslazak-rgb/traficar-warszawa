@@ -23,7 +23,9 @@ SHEET_ID = "1JBw3vbYue_LEH_Boc4Gna6IvzAD4kyUHNHGwyr5lXE0"
 ORDERS_GID = "1458960516"
 SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv&gid={ORDERS_GID}"
 
-COUNTED_STATES = {"finished"}
+# Every order created on a day counts, including ones still running (a rental can last
+# longer than 24 hours), except cancelled bookings and failed payments.
+EXCLUDED_STATES = {"cancelled_commerce_fail", "booking_cancelled", "cancelled_booking_fail"}
 
 BOLT_FLEET = 490
 ORDERS_TTL_S = 900
@@ -32,8 +34,13 @@ RETRY_S = 300
 _TIME = re.compile(r"^(\d{1,2})/(\d{1,2})/(\d{4}) (\d{1,2}):(\d{2}):(\d{2})$")
 
 
+def is_counted(state: str) -> bool:
+    state = state.strip().lower()
+    return bool(state) and state not in EXCLUDED_STATES and "cancel" not in state
+
+
 def aggregate_sheet(text: str, since: datetime | None = None) -> tuple[dict[str, int], str | None]:
-    """Counts finished orders per day and returns the newest order time as it appears in the sheet.
+    """Counts orders per day of creation and returns the newest order time as it appears in the sheet.
 
     Created Time is Warsaw local time; orders created before `since` are skipped.
     """
@@ -52,7 +59,7 @@ def aggregate_sheet(text: str, since: datetime | None = None) -> tuple[dict[str,
     for row in rows[1:]:
         if len(row) <= max(time_i, plate_i, state_i):
             continue
-        if row[state_i].strip() not in COUNTED_STATES:
+        if not is_counted(row[state_i]):
             continue
         created = row[time_i].strip()
         match = _TIME.match(created)
