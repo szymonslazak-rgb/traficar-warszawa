@@ -64,9 +64,9 @@ def make_data(root: Path) -> None:
 
 
 class BoltSheetTest(unittest.TestCase):
-    def test_counts_only_warsaw_orders_in_counted_states(self):
+    def test_counts_finished_orders_per_day(self):
         per_day, latest = bolt.aggregate_sheet(SHEET)
-        self.assertEqual(per_day, {"2026-11-22": 2, "2026-11-23": 1})
+        self.assertEqual(per_day, {"2026-11-22": 3, "2026-11-23": 1})
         self.assertEqual(latest, "11/23/2026 1:05:09")
 
     def test_missing_columns_is_an_error(self):
@@ -86,7 +86,7 @@ class BoltFleetTest(unittest.TestCase):
         with mock.patch.object(bolt, "download_sheet", return_value=SHEET):
             data.refresh()
         snapshot = data.snapshot()
-        self.assertEqual(snapshot["orders"], {"2026-11-22": 2, "2026-11-23": 1})
+        self.assertEqual(snapshot["orders"], {"2026-11-22": 3, "2026-11-23": 1})
         self.assertEqual(snapshot["fleet"], {"2026-11-22": 490, "2026-11-23": 490})
         self.assertEqual(bolt.BOLT_FLEET, 490)
 
