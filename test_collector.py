@@ -35,11 +35,11 @@ class DetectorTest(unittest.TestCase):
         self.assertEqual(trips[0]["minutes"], 24.0)
         self.assertGreater(trips[0]["distance_km"], 3)
 
-    def test_round_trip_counted_by_fuel(self):
+    def test_round_trip_with_fuel_drop_is_not_an_order(self):
         reads = [(minutes(0), [car()])] + [(minutes(i), []) for i in range(1, 40)]
         reads.append((minutes(40), [car(lat=52.2301, fuel=46)]))
         _, trips = self.run_reads(reads)
-        self.assertEqual(trips[0]["kind"], "przejazd")
+        self.assertEqual(trips[0]["kind"], "postoj")
 
     def test_range_drop_alone_is_not_a_trip(self):
         reads = [(minutes(0), [car(rng=146)])] + [(minutes(i), []) for i in range(1, 15)]
