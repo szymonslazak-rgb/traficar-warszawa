@@ -1,0 +1,5 @@
+car_id,reg_plate,model,start_at,end_at,minutes,distance_km,fuel_start,fuel_end,range_start,range_end,kind,note
+83841,DX06911,RENAULT Arkana,2026-11-26T08:56:47Z,2026-11-26T09:02:47Z,6.0,0.0,36.0,36.0,144,257,rezerwacja,start niepewny
+79688,WE2AL58,RENAULT Clio V,2026-11-26T08:56:47Z,2026-11-26T09:03:47Z,7.0,13.03,34.0,98.0,112,560,przejazd,start niepewny
+53177,KR8RP70,RENAULT Clio V,2026-11-26T08:56:47Z,2026-11-26T09:04:47Z,8.0,3.1,50.0,43.0,168,240,przejazd,start niepewny
+68671,KK70318,DACIA Sandero,2026-11-26T08:56:47Z,2026-11-26T09:04:47Z,8.0,0.01,48.0,46.0,192,287,przejazd,start niepewny
