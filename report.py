@@ -14,8 +14,25 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 WARSAW = ZoneInfo("Europe/Warsaw")
-COUNTED = {"przejazd"}
+ORDER_MIN_MINUTES = 5
+ORDER_MIN_KM = 0.3
+# First full day collected without gaps under the current counting rule; earlier days are kept
+# in data/ but left out of the comparison.
+COMPARE_FROM = "2026-11-27"
 TEMPLATE = Path(__file__).with_name("report_template.html")
+
+
+def is_order(trip: dict) -> bool:
+    """A car left the map and came back at least 5 minutes later somewhere else.
+
+    Judged from the stored minutes and distance rather than the stored kind, so trips
+    recorded under an older rule are counted the same way as new ones.
+    """
+    try:
+        return float(trip["minutes"]) >= ORDER_MIN_MINUTES and float(trip["distance_km"]) >= ORDER_MIN_KM
+    except (KeyError, TypeError, ValueError):
+        return False
+
 
 _cache: dict[tuple[str, int, int], list[dict]] = {}
 
@@ -55,12 +72,12 @@ def build_data(root: Path, bolt: dict, now: datetime) -> dict:
         local = first_read.astimezone(WARSAW)
         midnight = local.replace(hour=0, minute=0, second=0, microsecond=0)
         start_date = local.date() if local - midnight <= timedelta(minutes=10) else local.date() + timedelta(days=1)
-        start_day = start_date.isoformat()
+        start_day = max(start_date.isoformat(), COMPARE_FROM)
 
     out_days = []
     for day in days:
         reads = [r for r in _rows(root / "reads" / f"{day}.csv") if r.get("ok") == "1"]
-        trips = [t for t in _rows(root / "trips" / f"{day}.csv") if t.get("kind") in COUNTED]
+        trips = [t for t in _rows(root / "trips" / f"{day}.csv") if is_order(t)]
         by_model: dict[str, int] = {}
         for trip in trips:
             by_model[trip["model"]] = by_model.get(trip["model"], 0) + 1
