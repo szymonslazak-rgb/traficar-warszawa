@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-27T05:24:04Z",
+ "generated_at": "2026-11-27T05:34:04Z",
  "zone": "Warszawa",
  "days": [
   {
@@ -59,7 +59,7 @@
     "DACIA Sandero": 1
    },
    "avg_available": 484.4,
-   "reads": 384,
+   "reads": 394,
    "coverage_pct": 100.0
   }
  ],
