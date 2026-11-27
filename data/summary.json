@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-27T18:30:56Z",
+ "generated_at": "2026-11-27T18:40:56Z",
  "zone": "Warszawa",
  "days": [
   {
@@ -36,10 +36,10 @@
   },
   {
    "day": "2026-11-26",
-   "trips": 541,
+   "trips": 542,
    "reservations": 74,
    "trips_by_model": {
-    "RENAULT Clio V": 215,
+    "RENAULT Clio V": 216,
     "RENAULT Arkana": 199,
     "DACIA Sandero": 53,
     "RENAULT Master": 41,
@@ -52,41 +52,41 @@
   },
   {
    "day": "2026-11-27",
-   "trips": 467,
-   "reservations": 80,
+   "trips": 473,
+   "reservations": 81,
    "trips_by_model": {
-    "RENAULT Clio V": 192,
-    "RENAULT Arkana": 148,
+    "RENAULT Clio V": 193,
+    "RENAULT Arkana": 152,
     "DACIA Sandero": 61,
     "RENAULT Master": 43,
-    "DACIA Dokker": 15,
+    "DACIA Dokker": 16,
     "RENAULT Kangoo": 8
    },
-   "avg_available": 444.6,
-   "reads": 1164,
+   "avg_available": 444.1,
+   "reads": 1174,
    "coverage_pct": 99.5
   }
  ],
  "periods": {
   "doba": {
    "days": 1,
-   "avg_trips_per_day": 467.0,
-   "avg_available": 444.6,
+   "avg_trips_per_day": 473.0,
+   "avg_available": 444.1,
    "avg_trips_per_day_by_model": {
-    "RENAULT Clio V": 192.0,
-    "RENAULT Arkana": 148.0,
+    "RENAULT Clio V": 193.0,
+    "RENAULT Arkana": 152.0,
     "DACIA Sandero": 61.0,
     "RENAULT Master": 43.0,
-    "DACIA Dokker": 15.0,
+    "DACIA Dokker": 16.0,
     "RENAULT Kangoo": 8.0
    }
   },
   "tydzien": {
    "days": 3,
-   "avg_trips_per_day": 431.7,
+   "avg_trips_per_day": 432.0,
    "avg_available": 451.4,
    "avg_trips_per_day_by_model": {
-    "RENAULT Clio V": 183.0,
+    "RENAULT Clio V": 183.3,
     "RENAULT Arkana": 150.3,
     "DACIA Sandero": 49.0,
     "RENAULT Master": 27.7,
@@ -96,10 +96,10 @@
   },
   "miesiac": {
    "days": 3,
-   "avg_trips_per_day": 431.7,
+   "avg_trips_per_day": 432.0,
    "avg_available": 451.4,
    "avg_trips_per_day_by_model": {
-    "RENAULT Clio V": 183.0,
+    "RENAULT Clio V": 183.3,
     "RENAULT Arkana": 150.3,
     "DACIA Sandero": 49.0,
     "RENAULT Master": 27.7,
