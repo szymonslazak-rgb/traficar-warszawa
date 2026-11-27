@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-27T08:59:16Z",
+ "generated_at": "2026-11-27T09:09:16Z",
  "zone": "Warszawa",
  "days": [
   {
@@ -35,7 +35,7 @@
   },
   {
    "day": "2026-11-26",
-   "trips": 346,
+   "trips": 347,
    "reservations": 74,
    "trips_by_model": {
     "RENAULT Clio V": 158,
@@ -43,7 +43,7 @@
     "DACIA Sandero": 34,
     "RENAULT Master": 7,
     "DACIA Dokker": 7,
-    "RENAULT Kangoo": 2
+    "RENAULT Kangoo": 3
    },
    "avg_available": 432.9,
    "reads": 801,
@@ -51,32 +51,34 @@
   },
   {
    "day": "2026-11-27",
-   "trips": 74,
-   "reservations": 16,
+   "trips": 81,
+   "reservations": 17,
    "trips_by_model": {
-    "RENAULT Arkana": 33,
-    "RENAULT Clio V": 31,
-    "DACIA Sandero": 10
+    "RENAULT Arkana": 34,
+    "RENAULT Clio V": 34,
+    "DACIA Sandero": 12,
+    "DACIA Dokker": 1
    },
-   "avg_available": 475.8,
-   "reads": 599,
+   "avg_available": 475.2,
+   "reads": 609,
    "coverage_pct": 100.0
   }
  ],
  "periods": {
   "doba": {
    "days": 1,
-   "avg_trips_per_day": 74.0,
-   "avg_available": 475.8,
+   "avg_trips_per_day": 81.0,
+   "avg_available": 475.2,
    "avg_trips_per_day_by_model": {
-    "RENAULT Arkana": 33.0,
-    "RENAULT Clio V": 31.0,
-    "DACIA Sandero": 10.0
+    "RENAULT Arkana": 34.0,
+    "RENAULT Clio V": 34.0,
+    "DACIA Sandero": 12.0,
+    "DACIA Dokker": 1.0
    }
   },
   "tydzien": {
    "days": 3,
-   "avg_trips_per_day": 304.0,
+   "avg_trips_per_day": 304.3,
    "avg_available": 451.4,
    "avg_trips_per_day_by_model": {
     "RENAULT Clio V": 142.7,
@@ -84,12 +86,12 @@
     "DACIA Sandero": 36.0,
     "RENAULT Master": 5.7,
     "DACIA Dokker": 5.3,
-    "RENAULT Kangoo": 1.0
+    "RENAULT Kangoo": 1.3
    }
   },
   "miesiac": {
    "days": 3,
-   "avg_trips_per_day": 304.0,
+   "avg_trips_per_day": 304.3,
    "avg_available": 451.4,
    "avg_trips_per_day_by_model": {
     "RENAULT Clio V": 142.7,
@@ -97,7 +99,7 @@
     "DACIA Sandero": 36.0,
     "RENAULT Master": 5.7,
     "DACIA Dokker": 5.3,
-    "RENAULT Kangoo": 1.0
+    "RENAULT Kangoo": 1.3
    }
   }
  }
