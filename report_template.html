@@ -345,7 +345,7 @@ function createCalc(D) {
 
   var TEXT = {
     fleet: ["Wielkość floty", "Trafficar: auta carsharingowe w Warszawie, które widać na mapie danego dnia lub dobę wcześniej, oraz średnia liczba wolnych aut z odczytów. Bolt: stała flota 490 aut. Hulajnogi są pominięte.", true, fleetBody],
-    orders: ["Zamówienia i zamówienia na auto", "Zamówienie Trafficara to auto, które zniknęło z mapy i pojawiło się ponownie co najmniej 5 minut później w innym miejscu (co najmniej 300 m dalej). Nic innego się nie liczy. Bolt to wszystkie zamówienia z arkusza rozpoczęte danego dnia, także trwające, bez anulowanych i nieudanych płatności. Na auto to zamówienia podzielone przez flotę z tego samego okresu.", true, ordersBody],
+    orders: ["Zamówienia i zamówienia na auto", "Zamówienie Trafficara to każde zniknięcie auta z mapy trwające co najmniej 5 minut, bez względu na to, gdzie auto wróciło. Liczy się od chwili, gdy minęło 5 minut, także gdy auto jeszcze nie wróciło, w dniu startu. Od liczby dziennej odejmujemy 30 zniknięć na dobę na mycie i logistykę obsługi (proporcjonalnie w niepełnym dniu). Bolt to wszystkie zamówienia z arkusza rozpoczęte danego dnia, także trwające, bez anulowanych i nieudanych płatności. Na auto to zamówienia podzielone przez flotę z tego samego okresu.", true, ordersBody],
     models: ["Zamówienia Trafficara według modelu", "Podział przejazdów Trafficara na modele aut, liczony z zakończonych dób wybranego okresu. Aut we flocie to stan z ostatniej doby okresu, a „na auto na dobę” uwzględnia, od kiedy dane auto jest we flocie.", false, modelsBody]
   };
 
@@ -397,6 +397,7 @@ function createCalc(D) {
     " Dzisiejszy wiersz rośnie na bieżąco: Trafficar do " + clock(D.traficar_until) + ", Bolt do " + sheetClock(D.bolt_latest_order) +
     " (arkusz odświeża się co godzinę). Strona sama się przeładowuje co 5 minut.";
   setTimeout(function () { location.reload(); }, 5 * 60 * 1000);
+
   var sources = [];
   if (D.bolt_orders_fetched_at) sources.push("Arkusz zamówień Bolta odczytany " + new Date(D.bolt_orders_fetched_at).toLocaleString("pl-PL", { timeZone: "Europe/Warsaw", dateStyle: "medium", timeStyle: "short" }) + ".");
   if (D.bolt_latest_order) sources.push("Ostatnie zamówienie w arkuszu: " + D.bolt_latest_order + ".");
