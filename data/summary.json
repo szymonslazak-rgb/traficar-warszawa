@@ -1,16 +1,16 @@
 {
- "generated_at": "2026-11-27T17:50:56Z",
+ "generated_at": "2026-11-27T18:00:56Z",
  "zone": "Warszawa",
  "days": [
   {
    "day": "2026-11-24",
-   "trips": 307,
+   "trips": 308,
    "reservations": 53,
    "trips_by_model": {
     "RENAULT Clio V": 135,
     "RENAULT Arkana": 105,
     "DACIA Sandero": 34,
-    "RENAULT Master": 16,
+    "RENAULT Master": 17,
     "DACIA Dokker": 15,
     "RENAULT Kangoo": 2
    },
@@ -52,30 +52,30 @@
   },
   {
    "day": "2026-11-27",
-   "trips": 427,
+   "trips": 434,
    "reservations": 80,
    "trips_by_model": {
-    "RENAULT Clio V": 177,
-    "RENAULT Arkana": 134,
-    "DACIA Sandero": 55,
+    "RENAULT Clio V": 179,
+    "RENAULT Arkana": 138,
+    "DACIA Sandero": 56,
     "RENAULT Master": 38,
     "DACIA Dokker": 15,
     "RENAULT Kangoo": 8
    },
-   "avg_available": 446.9,
-   "reads": 1124,
+   "avg_available": 446.3,
+   "reads": 1134,
    "coverage_pct": 99.5
   }
  ],
  "periods": {
   "doba": {
    "days": 1,
-   "avg_trips_per_day": 427.0,
-   "avg_available": 446.9,
+   "avg_trips_per_day": 434.0,
+   "avg_available": 446.3,
    "avg_trips_per_day_by_model": {
-    "RENAULT Clio V": 177.0,
-    "RENAULT Arkana": 134.0,
-    "DACIA Sandero": 55.0,
+    "RENAULT Clio V": 179.0,
+    "RENAULT Arkana": 138.0,
+    "DACIA Sandero": 56.0,
     "RENAULT Master": 38.0,
     "DACIA Dokker": 15.0,
     "RENAULT Kangoo": 8.0
@@ -83,26 +83,26 @@
   },
   "tydzien": {
    "days": 3,
-   "avg_trips_per_day": 431.0,
+   "avg_trips_per_day": 431.3,
    "avg_available": 451.4,
    "avg_trips_per_day_by_model": {
     "RENAULT Clio V": 183.0,
     "RENAULT Arkana": 150.0,
     "DACIA Sandero": 49.0,
-    "RENAULT Master": 27.3,
+    "RENAULT Master": 27.7,
     "DACIA Dokker": 18.0,
     "RENAULT Kangoo": 3.7
    }
   },
   "miesiac": {
    "days": 3,
-   "avg_trips_per_day": 431.0,
+   "avg_trips_per_day": 431.3,
    "avg_available": 451.4,
    "avg_trips_per_day_by_model": {
     "RENAULT Clio V": 183.0,
     "RENAULT Arkana": 150.0,
     "DACIA Sandero": 49.0,
-    "RENAULT Master": 27.3,
+    "RENAULT Master": 27.7,
     "DACIA Dokker": 18.0,
     "RENAULT Kangoo": 3.7
    }
