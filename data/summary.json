@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-27T07:14:04Z",
+ "generated_at": "2026-11-27T07:24:04Z",
  "zone": "Warszawa",
  "days": [
   {
@@ -35,12 +35,12 @@
   },
   {
    "day": "2026-11-26",
-   "trips": 343,
+   "trips": 344,
    "reservations": 74,
    "trips_by_model": {
     "RENAULT Clio V": 157,
     "RENAULT Arkana": 137,
-    "DACIA Sandero": 33,
+    "DACIA Sandero": 34,
     "RENAULT Master": 7,
     "DACIA Dokker": 7,
     "RENAULT Kangoo": 2
@@ -51,37 +51,37 @@
   },
   {
    "day": "2026-11-27",
-   "trips": 42,
+   "trips": 45,
    "reservations": 8,
    "trips_by_model": {
-    "RENAULT Arkana": 21,
+    "RENAULT Arkana": 23,
     "RENAULT Clio V": 17,
-    "DACIA Sandero": 4
+    "DACIA Sandero": 5
    },
-   "avg_available": 482.6,
-   "reads": 494,
+   "avg_available": 482.1,
+   "reads": 504,
    "coverage_pct": 100.0
   }
  ],
  "periods": {
   "doba": {
    "days": 1,
-   "avg_trips_per_day": 42.0,
-   "avg_available": 482.6,
+   "avg_trips_per_day": 45.0,
+   "avg_available": 482.1,
    "avg_trips_per_day_by_model": {
-    "RENAULT Arkana": 21.0,
+    "RENAULT Arkana": 23.0,
     "RENAULT Clio V": 17.0,
-    "DACIA Sandero": 4.0
+    "DACIA Sandero": 5.0
    }
   },
   "tydzien": {
    "days": 3,
-   "avg_trips_per_day": 303.0,
+   "avg_trips_per_day": 303.3,
    "avg_available": 451.4,
    "avg_trips_per_day_by_model": {
     "RENAULT Clio V": 142.3,
     "RENAULT Arkana": 113.0,
-    "DACIA Sandero": 35.7,
+    "DACIA Sandero": 36.0,
     "RENAULT Master": 5.7,
     "DACIA Dokker": 5.3,
     "RENAULT Kangoo": 1.0
@@ -89,12 +89,12 @@
   },
   "miesiac": {
    "days": 3,
-   "avg_trips_per_day": 303.0,
+   "avg_trips_per_day": 303.3,
    "avg_available": 451.4,
    "avg_trips_per_day_by_model": {
     "RENAULT Clio V": 142.3,
     "RENAULT Arkana": 113.0,
-    "DACIA Sandero": 35.7,
+    "DACIA Sandero": 36.0,
     "RENAULT Master": 5.7,
     "DACIA Dokker": 5.3,
     "RENAULT Kangoo": 1.0
