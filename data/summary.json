@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-27T05:14:04Z",
+ "generated_at": "2026-11-27T05:24:04Z",
  "zone": "Warszawa",
  "days": [
   {
@@ -51,26 +51,26 @@
   },
   {
    "day": "2026-11-27",
-   "trips": 24,
+   "trips": 26,
    "reservations": 2,
    "trips_by_model": {
     "RENAULT Arkana": 15,
-    "RENAULT Clio V": 8,
+    "RENAULT Clio V": 10,
     "DACIA Sandero": 1
    },
-   "avg_available": 484.5,
-   "reads": 374,
+   "avg_available": 484.4,
+   "reads": 384,
    "coverage_pct": 100.0
   }
  ],
  "periods": {
   "doba": {
    "days": 1,
-   "avg_trips_per_day": 24.0,
-   "avg_available": 484.5,
+   "avg_trips_per_day": 26.0,
+   "avg_available": 484.4,
    "avg_trips_per_day_by_model": {
     "RENAULT Arkana": 15.0,
-    "RENAULT Clio V": 8.0,
+    "RENAULT Clio V": 10.0,
     "DACIA Sandero": 1.0
    }
   },
