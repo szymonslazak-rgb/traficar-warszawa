@@ -59,9 +59,9 @@ def make_data(root: Path) -> None:
         trips = (
             [trip("RENAULT Clio V", 25, 3.2, "przejazd") for _ in range(30)]
             + [trip("DACIA Dokker", 5, 0.3, "przejazd") for _ in range(10)]
-            # Not orders: cancelled reservation, back in place with less fuel, moved in under 5 minutes.
-            + [trip("DACIA Dokker", 8, 0.0, "rezerwacja") for _ in range(7)]
-            + [trip("RENAULT Clio V", 40, 0.1, "przejazd") for _ in range(3)]
+            # Not orders: back on the map within 5 minutes.
+            + [trip("DACIA Dokker", 3, 0.0, "rezerwacja") for _ in range(7)]
+            + [trip("RENAULT Clio V", 4.0, 0.1, "rezerwacja") for _ in range(3)]
             + [trip("RENAULT Clio V", 4.9, 2.0, "przejazd") for _ in range(2)]
         )
         write_csv(root / "trips" / f"{day}.csv", ["model", "start_at", "minutes", "distance_km", "kind"], trips)
@@ -133,13 +133,32 @@ class RegistryTest(unittest.TestCase):
 
 
 class OrderRuleTest(unittest.TestCase):
-    def test_order_needs_five_minutes_off_the_map_and_another_place(self):
+    def test_order_is_any_five_minutes_off_the_map(self):
         self.assertEqual(classify(5, 0.3), "przejazd")
         self.assertEqual(classify(4.9, 5.0), "rezerwacja")
         self.assertEqual(classify(60, 0.29), "postoj")
         self.assertTrue(is_order({"minutes": "5.0", "distance_km": "0.3"}))
-        self.assertFalse(is_order({"minutes": "45", "distance_km": "0.1", "kind": "przejazd"}))
+        self.assertTrue(is_order({"minutes": "45", "distance_km": "0.1", "kind": "postoj"}))
+        self.assertFalse(is_order({"minutes": "4.9", "distance_km": "5.0", "kind": "rezerwacja"}))
         self.assertFalse(is_order({"kind": "przejazd"}))
+
+    def test_service_is_taken_off_in_proportion_to_each_model(self):
+        left = report.take_off_service({"A": 60, "B": 30, "C": 10}, 30)
+        self.assertEqual(left, {"A": 42, "B": 21, "C": 7})
+        self.assertEqual(report.take_off_service({"A": 5}, 30), {})
+        self.assertEqual(report.take_off_service({"A": 5}, 0), {"A": 5})
+
+    def test_cars_still_off_the_map_count_after_five_minutes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            iso = lambda minutes: (NOW - timedelta(minutes=minutes)).isoformat().replace("+00:00", "Z")
+            (root / "state.json").write_text(json.dumps({"missing": {
+                "1": {"since": iso(4)}, "2": {"since": iso(6)}, "3": {"since": iso(600)},
+            }}), "utf-8")
+            (root / "cars.json").write_text(json.dumps({"2": {"model": "DACIA Dokker"}}), "utf-8")
+            orders = report.pending_orders(root, NOW, NOW - timedelta(minutes=300))
+            self.assertEqual([o["model"] for o in orders], ["DACIA Dokker"])
+            self.assertEqual(len(report.pending_orders(root, NOW, NOW - timedelta(days=1))), 2)
 
     def test_car_moved_during_a_read_gap_counts_only_after_five_minutes(self):
         detector = Detector()
@@ -153,9 +172,10 @@ class OrderRuleTest(unittest.TestCase):
 
 class ReportTest(unittest.TestCase):
     def setUp(self):
-        patcher = mock.patch.object(report, "COMPARE_FROM", datetime(2000, 1, 1, tzinfo=WARSAW))
-        patcher.start()
-        self.addCleanup(patcher.stop)
+        for name, value in (("COMPARE_FROM", datetime(2000, 1, 1, tzinfo=WARSAW)), ("SERVICE_PER_DAY", 0)):
+            patcher = mock.patch.object(report, name, value)
+            patcher.start()
+            self.addCleanup(patcher.stop)
         self.tmp = Path(tempfile.mkdtemp())
         make_data(self.tmp)
         self.data = build_data(
