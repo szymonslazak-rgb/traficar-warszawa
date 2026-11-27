@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-27T19:20:56Z",
+ "generated_at": "2026-11-27T19:30:56Z",
  "zone": "Warszawa",
  "days": [
   {
@@ -36,10 +36,10 @@
   },
   {
    "day": "2026-11-26",
-   "trips": 544,
+   "trips": 545,
    "reservations": 74,
    "trips_by_model": {
-    "RENAULT Clio V": 216,
+    "RENAULT Clio V": 217,
     "RENAULT Arkana": 200,
     "DACIA Sandero": 53,
     "RENAULT Master": 41,
@@ -52,41 +52,41 @@
   },
   {
    "day": "2026-11-27",
-   "trips": 504,
+   "trips": 513,
    "reservations": 85,
    "trips_by_model": {
-    "RENAULT Clio V": 200,
-    "RENAULT Arkana": 161,
+    "RENAULT Clio V": 204,
+    "RENAULT Arkana": 162,
     "DACIA Sandero": 67,
-    "RENAULT Master": 48,
-    "DACIA Dokker": 19,
+    "RENAULT Master": 51,
+    "DACIA Dokker": 20,
     "RENAULT Kangoo": 9
    },
-   "avg_available": 442.0,
-   "reads": 1214,
+   "avg_available": 441.5,
+   "reads": 1224,
    "coverage_pct": 99.5
   }
  ],
  "periods": {
   "doba": {
    "days": 1,
-   "avg_trips_per_day": 504.0,
-   "avg_available": 442.0,
+   "avg_trips_per_day": 513.0,
+   "avg_available": 441.5,
    "avg_trips_per_day_by_model": {
-    "RENAULT Clio V": 200.0,
-    "RENAULT Arkana": 161.0,
+    "RENAULT Clio V": 204.0,
+    "RENAULT Arkana": 162.0,
     "DACIA Sandero": 67.0,
-    "RENAULT Master": 48.0,
-    "DACIA Dokker": 19.0,
+    "RENAULT Master": 51.0,
+    "DACIA Dokker": 20.0,
     "RENAULT Kangoo": 9.0
    }
   },
   "tydzien": {
    "days": 3,
-   "avg_trips_per_day": 432.7,
+   "avg_trips_per_day": 433.0,
    "avg_available": 451.4,
    "avg_trips_per_day_by_model": {
-    "RENAULT Clio V": 183.3,
+    "RENAULT Clio V": 183.7,
     "RENAULT Arkana": 150.7,
     "DACIA Sandero": 49.0,
     "RENAULT Master": 27.7,
@@ -96,10 +96,10 @@
   },
   "miesiac": {
    "days": 3,
-   "avg_trips_per_day": 432.7,
+   "avg_trips_per_day": 433.0,
    "avg_available": 451.4,
    "avg_trips_per_day_by_model": {
-    "RENAULT Clio V": 183.3,
+    "RENAULT Clio V": 183.7,
     "RENAULT Arkana": 150.7,
     "DACIA Sandero": 49.0,
     "RENAULT Master": 27.7,
