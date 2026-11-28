@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-28T12:36:35Z",
+ "generated_at": "2026-11-28T12:46:35Z",
  "zone": "Warszawa",
  "days": [
   {
@@ -52,11 +52,11 @@
   },
   {
    "day": "2026-11-27",
-   "trips": 721,
+   "trips": 722,
    "reservations": 97,
    "trips_by_model": {
     "RENAULT Clio V": 285,
-    "RENAULT Arkana": 235,
+    "RENAULT Arkana": 236,
     "DACIA Sandero": 87,
     "RENAULT Master": 70,
     "DACIA Dokker": 32,
@@ -68,32 +68,32 @@
   },
   {
    "day": "2026-11-28",
-   "trips": 227,
-   "reservations": 60,
+   "trips": 240,
+   "reservations": 63,
    "trips_by_model": {
-    "RENAULT Clio V": 77,
-    "RENAULT Arkana": 73,
+    "RENAULT Clio V": 83,
+    "RENAULT Arkana": 79,
     "DACIA Sandero": 37,
-    "RENAULT Master": 27,
+    "RENAULT Master": 28,
     "DACIA Dokker": 8,
     "RENAULT Kangoo": 4,
     "RENAULT Express": 1
    },
-   "avg_available": 456.6,
-   "reads": 817,
+   "avg_available": 455.3,
+   "reads": 827,
    "coverage_pct": 100.0
   }
  ],
  "periods": {
   "doba": {
    "days": 1,
-   "avg_trips_per_day": 227.0,
-   "avg_available": 456.6,
+   "avg_trips_per_day": 240.0,
+   "avg_available": 455.3,
    "avg_trips_per_day_by_model": {
-    "RENAULT Clio V": 77.0,
-    "RENAULT Arkana": 73.0,
+    "RENAULT Clio V": 83.0,
+    "RENAULT Arkana": 79.0,
     "DACIA Sandero": 37.0,
-    "RENAULT Master": 27.0,
+    "RENAULT Master": 28.0,
     "DACIA Dokker": 8.0,
     "RENAULT Kangoo": 4.0,
     "RENAULT Express": 1.0
@@ -101,11 +101,11 @@
   },
   "tydzien": {
    "days": 4,
-   "avg_trips_per_day": 509.0,
+   "avg_trips_per_day": 509.2,
    "avg_available": 448.8,
    "avg_trips_per_day_by_model": {
     "RENAULT Clio V": 209.8,
-    "RENAULT Arkana": 173.5,
+    "RENAULT Arkana": 173.8,
     "DACIA Sandero": 59.2,
     "RENAULT Master": 38.8,
     "DACIA Dokker": 21.8,
@@ -114,11 +114,11 @@
   },
   "miesiac": {
    "days": 4,
-   "avg_trips_per_day": 509.0,
+   "avg_trips_per_day": 509.2,
    "avg_available": 448.8,
    "avg_trips_per_day_by_model": {
     "RENAULT Clio V": 209.8,
-    "RENAULT Arkana": 173.5,
+    "RENAULT Arkana": 173.8,
     "DACIA Sandero": 59.2,
     "RENAULT Master": 38.8,
     "DACIA Dokker": 21.8,
