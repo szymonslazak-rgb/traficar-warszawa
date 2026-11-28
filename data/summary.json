@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-28T09:41:23Z",
+ "generated_at": "2026-11-28T09:47:23Z",
  "zone": "Warszawa",
  "days": [
   {
@@ -36,12 +36,12 @@
   },
   {
    "day": "2026-11-26",
-   "trips": 552,
+   "trips": 553,
    "reservations": 74,
    "trips_by_model": {
     "RENAULT Clio V": 218,
     "RENAULT Arkana": 202,
-    "DACIA Sandero": 54,
+    "DACIA Sandero": 55,
     "RENAULT Master": 43,
     "DACIA Dokker": 28,
     "RENAULT Kangoo": 7
@@ -68,29 +68,29 @@
   },
   {
    "day": "2026-11-28",
-   "trips": 107,
-   "reservations": 31,
+   "trips": 108,
+   "reservations": 32,
    "trips_by_model": {
     "RENAULT Arkana": 44,
-    "RENAULT Clio V": 32,
+    "RENAULT Clio V": 33,
     "DACIA Sandero": 19,
     "RENAULT Master": 9,
     "DACIA Dokker": 2,
     "RENAULT Express": 1
    },
-   "avg_available": 476.5,
-   "reads": 642,
+   "avg_available": 476.1,
+   "reads": 647,
    "coverage_pct": 100.0
   }
  ],
  "periods": {
   "doba": {
    "days": 1,
-   "avg_trips_per_day": 107.0,
-   "avg_available": 476.5,
+   "avg_trips_per_day": 108.0,
+   "avg_available": 476.1,
    "avg_trips_per_day_by_model": {
     "RENAULT Arkana": 44.0,
-    "RENAULT Clio V": 32.0,
+    "RENAULT Clio V": 33.0,
     "DACIA Sandero": 19.0,
     "RENAULT Master": 9.0,
     "DACIA Dokker": 2.0,
@@ -99,12 +99,12 @@
   },
   "tydzien": {
    "days": 4,
-   "avg_trips_per_day": 504.8,
+   "avg_trips_per_day": 505.0,
    "avg_available": 448.8,
    "avg_trips_per_day_by_model": {
     "RENAULT Clio V": 208.0,
     "RENAULT Arkana": 172.0,
-    "DACIA Sandero": 58.8,
+    "DACIA Sandero": 59.0,
     "RENAULT Master": 38.5,
     "DACIA Dokker": 21.5,
     "RENAULT Kangoo": 6.0
@@ -112,12 +112,12 @@
   },
   "miesiac": {
    "days": 4,
-   "avg_trips_per_day": 504.8,
+   "avg_trips_per_day": 505.0,
    "avg_available": 448.8,
    "avg_trips_per_day_by_model": {
     "RENAULT Clio V": 208.0,
     "RENAULT Arkana": 172.0,
-    "DACIA Sandero": 58.8,
+    "DACIA Sandero": 59.0,
     "RENAULT Master": 38.5,
     "DACIA Dokker": 21.5,
     "RENAULT Kangoo": 6.0
