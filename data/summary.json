@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-28T12:26:35Z",
+ "generated_at": "2026-11-28T12:36:35Z",
  "zone": "Warszawa",
  "days": [
   {
@@ -68,30 +68,30 @@
   },
   {
    "day": "2026-11-28",
-   "trips": 221,
-   "reservations": 59,
+   "trips": 227,
+   "reservations": 60,
    "trips_by_model": {
-    "RENAULT Arkana": 72,
-    "RENAULT Clio V": 72,
+    "RENAULT Clio V": 77,
+    "RENAULT Arkana": 73,
     "DACIA Sandero": 37,
     "RENAULT Master": 27,
     "DACIA Dokker": 8,
     "RENAULT Kangoo": 4,
     "RENAULT Express": 1
    },
-   "avg_available": 457.8,
-   "reads": 807,
+   "avg_available": 456.6,
+   "reads": 817,
    "coverage_pct": 100.0
   }
  ],
  "periods": {
   "doba": {
    "days": 1,
-   "avg_trips_per_day": 221.0,
-   "avg_available": 457.8,
+   "avg_trips_per_day": 227.0,
+   "avg_available": 456.6,
    "avg_trips_per_day_by_model": {
-    "RENAULT Arkana": 72.0,
-    "RENAULT Clio V": 72.0,
+    "RENAULT Clio V": 77.0,
+    "RENAULT Arkana": 73.0,
     "DACIA Sandero": 37.0,
     "RENAULT Master": 27.0,
     "DACIA Dokker": 8.0,
