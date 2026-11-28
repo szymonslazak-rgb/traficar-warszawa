@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-28T08:41:23Z",
+ "generated_at": "2026-11-28T08:51:23Z",
  "zone": "Warszawa",
  "days": [
   {
@@ -52,10 +52,10 @@
   },
   {
    "day": "2026-11-27",
-   "trips": 705,
+   "trips": 707,
    "reservations": 97,
    "trips_by_model": {
-    "RENAULT Clio V": 276,
+    "RENAULT Clio V": 278,
     "RENAULT Arkana": 232,
     "DACIA Sandero": 86,
     "RENAULT Master": 68,
@@ -68,37 +68,39 @@
   },
   {
    "day": "2026-11-28",
-   "trips": 75,
-   "reservations": 21,
+   "trips": 85,
+   "reservations": 25,
    "trips_by_model": {
-    "RENAULT Arkana": 33,
-    "RENAULT Clio V": 25,
-    "DACIA Sandero": 12,
-    "RENAULT Master": 5
+    "RENAULT Arkana": 37,
+    "RENAULT Clio V": 28,
+    "DACIA Sandero": 13,
+    "RENAULT Master": 6,
+    "DACIA Dokker": 1
    },
-   "avg_available": 481.4,
-   "reads": 582,
+   "avg_available": 480.6,
+   "reads": 592,
    "coverage_pct": 100.0
   }
  ],
  "periods": {
   "doba": {
    "days": 1,
-   "avg_trips_per_day": 75.0,
-   "avg_available": 481.4,
+   "avg_trips_per_day": 85.0,
+   "avg_available": 480.6,
    "avg_trips_per_day_by_model": {
-    "RENAULT Arkana": 33.0,
-    "RENAULT Clio V": 25.0,
-    "DACIA Sandero": 12.0,
-    "RENAULT Master": 5.0
+    "RENAULT Arkana": 37.0,
+    "RENAULT Clio V": 28.0,
+    "DACIA Sandero": 13.0,
+    "RENAULT Master": 6.0,
+    "DACIA Dokker": 1.0
    }
   },
   "tydzien": {
    "days": 4,
-   "avg_trips_per_day": 503.8,
+   "avg_trips_per_day": 504.2,
    "avg_available": 448.8,
    "avg_trips_per_day_by_model": {
-    "RENAULT Clio V": 207.5,
+    "RENAULT Clio V": 208.0,
     "RENAULT Arkana": 171.8,
     "DACIA Sandero": 58.8,
     "RENAULT Master": 38.2,
@@ -108,10 +110,10 @@
   },
   "miesiac": {
    "days": 4,
-   "avg_trips_per_day": 503.8,
+   "avg_trips_per_day": 504.2,
    "avg_available": 448.8,
    "avg_trips_per_day_by_model": {
-    "RENAULT Clio V": 207.5,
+    "RENAULT Clio V": 208.0,
     "RENAULT Arkana": 171.8,
     "DACIA Sandero": 58.8,
     "RENAULT Master": 38.2,
