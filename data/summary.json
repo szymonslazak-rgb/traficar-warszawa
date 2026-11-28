@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-28T09:47:23Z",
+ "generated_at": "2026-11-28T09:56:35Z",
  "zone": "Warszawa",
  "days": [
   {
@@ -52,10 +52,10 @@
   },
   {
    "day": "2026-11-27",
-   "trips": 709,
+   "trips": 710,
    "reservations": 97,
    "trips_by_model": {
-    "RENAULT Clio V": 278,
+    "RENAULT Clio V": 279,
     "RENAULT Arkana": 233,
     "DACIA Sandero": 86,
     "RENAULT Master": 69,
@@ -68,30 +68,30 @@
   },
   {
    "day": "2026-11-28",
-   "trips": 108,
-   "reservations": 32,
+   "trips": 112,
+   "reservations": 33,
    "trips_by_model": {
-    "RENAULT Arkana": 44,
-    "RENAULT Clio V": 33,
-    "DACIA Sandero": 19,
+    "RENAULT Arkana": 45,
+    "RENAULT Clio V": 35,
+    "DACIA Sandero": 20,
     "RENAULT Master": 9,
     "DACIA Dokker": 2,
     "RENAULT Express": 1
    },
-   "avg_available": 476.1,
-   "reads": 647,
+   "avg_available": 475.2,
+   "reads": 657,
    "coverage_pct": 100.0
   }
  ],
  "periods": {
   "doba": {
    "days": 1,
-   "avg_trips_per_day": 108.0,
-   "avg_available": 476.1,
+   "avg_trips_per_day": 112.0,
+   "avg_available": 475.2,
    "avg_trips_per_day_by_model": {
-    "RENAULT Arkana": 44.0,
-    "RENAULT Clio V": 33.0,
-    "DACIA Sandero": 19.0,
+    "RENAULT Arkana": 45.0,
+    "RENAULT Clio V": 35.0,
+    "DACIA Sandero": 20.0,
     "RENAULT Master": 9.0,
     "DACIA Dokker": 2.0,
     "RENAULT Express": 1.0
@@ -99,10 +99,10 @@
   },
   "tydzien": {
    "days": 4,
-   "avg_trips_per_day": 505.0,
+   "avg_trips_per_day": 505.2,
    "avg_available": 448.8,
    "avg_trips_per_day_by_model": {
-    "RENAULT Clio V": 208.0,
+    "RENAULT Clio V": 208.2,
     "RENAULT Arkana": 172.0,
     "DACIA Sandero": 59.0,
     "RENAULT Master": 38.5,
@@ -112,10 +112,10 @@
   },
   "miesiac": {
    "days": 4,
-   "avg_trips_per_day": 505.0,
+   "avg_trips_per_day": 505.2,
    "avg_available": 448.8,
    "avg_trips_per_day_by_model": {
-    "RENAULT Clio V": 208.0,
+    "RENAULT Clio V": 208.2,
     "RENAULT Arkana": 172.0,
     "DACIA Sandero": 59.0,
     "RENAULT Master": 38.5,
