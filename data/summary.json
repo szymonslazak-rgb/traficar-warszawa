@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-28T00:06:08Z",
+ "generated_at": "2026-11-28T00:16:08Z",
  "zone": "Warszawa",
  "days": [
   {
@@ -52,12 +52,12 @@
   },
   {
    "day": "2026-11-27",
-   "trips": 682,
+   "trips": 685,
    "reservations": 97,
    "trips_by_model": {
-    "RENAULT Clio V": 265,
-    "RENAULT Arkana": 223,
-    "DACIA Sandero": 84,
+    "RENAULT Clio V": 266,
+    "RENAULT Arkana": 224,
+    "DACIA Sandero": 85,
     "RENAULT Master": 68,
     "DACIA Dokker": 31,
     "RENAULT Kangoo": 11
@@ -68,35 +68,35 @@
   },
   {
    "day": "2026-11-28",
-   "trips": 4,
+   "trips": 7,
    "reservations": 2,
    "trips_by_model": {
-    "RENAULT Arkana": 2,
-    "RENAULT Clio V": 2
+    "RENAULT Arkana": 4,
+    "RENAULT Clio V": 3
    },
-   "avg_available": 467.7,
-   "reads": 67,
+   "avg_available": 468.3,
+   "reads": 77,
    "coverage_pct": 100.0
   }
  ],
  "periods": {
   "doba": {
    "days": 1,
-   "avg_trips_per_day": 4.0,
-   "avg_available": 467.7,
+   "avg_trips_per_day": 7.0,
+   "avg_available": 468.3,
    "avg_trips_per_day_by_model": {
-    "RENAULT Arkana": 2.0,
-    "RENAULT Clio V": 2.0
+    "RENAULT Arkana": 4.0,
+    "RENAULT Clio V": 3.0
    }
   },
   "tydzien": {
    "days": 4,
-   "avg_trips_per_day": 497.2,
+   "avg_trips_per_day": 498.0,
    "avg_available": 448.8,
    "avg_trips_per_day_by_model": {
-    "RENAULT Clio V": 204.5,
-    "RENAULT Arkana": 169.2,
-    "DACIA Sandero": 58.2,
+    "RENAULT Clio V": 204.8,
+    "RENAULT Arkana": 169.5,
+    "DACIA Sandero": 58.5,
     "RENAULT Master": 38.0,
     "DACIA Dokker": 21.5,
     "RENAULT Kangoo": 5.8
@@ -104,12 +104,12 @@
   },
   "miesiac": {
    "days": 4,
-   "avg_trips_per_day": 497.2,
+   "avg_trips_per_day": 498.0,
    "avg_available": 448.8,
    "avg_trips_per_day_by_model": {
-    "RENAULT Clio V": 204.5,
-    "RENAULT Arkana": 169.2,
-    "DACIA Sandero": 58.2,
+    "RENAULT Clio V": 204.8,
+    "RENAULT Arkana": 169.5,
+    "DACIA Sandero": 58.5,
     "RENAULT Master": 38.0,
     "DACIA Dokker": 21.5,
     "RENAULT Kangoo": 5.8
